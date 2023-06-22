@@ -38,7 +38,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/condition_variable.hpp>
-
+#include "wipeable_string.h"
 
 namespace Monero {
 class TransactionHistoryImpl;
@@ -59,6 +59,12 @@ public:
     bool createWatchOnly(const std::string &path, const std::string &password,
                             const std::string &language) const override;
     bool open(const std::string &path, const std::string &password);
+	bool open_from_data(const std::string& password,
+							const std::string& keys_data_buf,
+							const std::string& cache_data_buf,
+							const std::string& daemon_address,
+							const std::string& daemon_username,
+							const std::string& daemon_password);
     bool recover(const std::string &path,const std::string &password,
                             const std::string &seed, const std::string &seed_offset = {});
     bool recoverFromKeysWithPassword(const std::string &path,
@@ -226,6 +232,18 @@ public:
     virtual bool reconnectDevice() override;
     virtual uint64_t getBytesReceived() override;
     virtual uint64_t getBytesSent() override;
+	virtual bool freeze(const std::string &key_image) override;
+	virtual bool thaw(const std::string &key_image) override;
+	virtual bool frozen(const std::string &key_image) const override;
+	virtual std::string prepare_multisig() override;
+	virtual MoneroMultisigSignResult sign_multisig_tx_hex(const std::string &multisig_tx_hex) override;
+	virtual std::vector<std::string> submit_multisig_tx_hex(const std::string &signed_multisig_tx_hex) override;
+    virtual std::string get_transfers() override;
+
+    virtual std::string get_keys_data_hex(const std::string& password, bool view_only) const  override;
+    virtual std::string get_keys_data_buf(const std::string& password, bool view_only) const  override;
+    virtual std::string get_cache_data_hex(const std::string& password) const  override;
+    virtual std::string get_cache_data_buf(const std::string& password) const  override;
 
 private:
     void clearStatus() const;

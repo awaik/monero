@@ -50,11 +50,11 @@
 #include "ringct/rctTypes.h"
 #include "device/device.hpp"
 #include "cryptonote_basic/fwd.h"
+#include "string_tools.h"
 
 namespace cryptonote
 {
   typedef std::vector<crypto::signature> ring_signature;
-
 
   /* outputs */
 
@@ -62,6 +62,11 @@ namespace cryptonote
   {
     std::vector<crypto::public_key> keys;
     std::vector<uint8_t> script;
+
+    BEGIN_KV_SERIALIZE_MAP()
+      KV_SERIALIZE(keys)
+      KV_SERIALIZE(script)
+    END_KV_SERIALIZE_MAP()
 
     BEGIN_SERIALIZE_OBJECT()
       FIELD(keys)
@@ -72,6 +77,10 @@ namespace cryptonote
   struct txout_to_scripthash
   {
     crypto::hash hash;
+
+    BEGIN_KV_SERIALIZE_MAP()
+      KV_SERIALIZE_VAL_POD_AS_HEX(hash)
+    END_KV_SERIALIZE_MAP()
   };
 
   // outputs <= HF_VERSION_VIEW_TAGS
@@ -80,6 +89,10 @@ namespace cryptonote
     txout_to_key() { }
     txout_to_key(const crypto::public_key &_key) : key(_key) { }
     crypto::public_key key;
+
+    BEGIN_KV_SERIALIZE_MAP()
+      KV_SERIALIZE_VAL_POD_AS_HEX(key)
+    END_KV_SERIALIZE_MAP()
   };
 
   // outputs >= HF_VERSION_VIEW_TAGS
@@ -89,6 +102,11 @@ namespace cryptonote
     txout_to_tagged_key(const crypto::public_key &_key, const crypto::view_tag &_view_tag) : key(_key), view_tag(_view_tag) { }
     crypto::public_key key;
     crypto::view_tag view_tag; // optimization to reduce scanning time
+
+    BEGIN_KV_SERIALIZE_MAP()
+      KV_SERIALIZE_VAL_POD_AS_HEX(key)
+      KV_SERIALIZE_VAL_POD_AS_HEX(view_tag)
+    END_KV_SERIALIZE_MAP()
 
     BEGIN_SERIALIZE_OBJECT()
       FIELD(key)
@@ -102,6 +120,11 @@ namespace cryptonote
   {
     size_t height;
 
+    BEGIN_KV_SERIALIZE_MAP()
+        uint32_t height_value = height;
+        epee::serialization::selector<is_store>::serialize(height_value, stg, hparent_section, "height");
+    END_KV_SERIALIZE_MAP()
+
     BEGIN_SERIALIZE_OBJECT()
       VARINT_FIELD(height)
     END_SERIALIZE()
@@ -112,6 +135,14 @@ namespace cryptonote
     crypto::hash prev;
     size_t prevout;
     std::vector<uint8_t> sigset;
+
+    BEGIN_KV_SERIALIZE_MAP()
+        KV_SERIALIZE_VAL_POD_AS_HEX(prev)
+        // prevout
+        uint32_t prevout_value = prevout;
+        epee::serialization::selector<is_store>::serialize(prevout_value, stg, hparent_section, "prevout");
+        KV_SERIALIZE(sigset)
+    END_KV_SERIALIZE_MAP()
 
     BEGIN_SERIALIZE_OBJECT()
       FIELD(prev)
@@ -127,6 +158,17 @@ namespace cryptonote
     txout_to_script script;
     std::vector<uint8_t> sigset;
 
+    BEGIN_KV_SERIALIZE_MAP()
+      KV_SERIALIZE_VAL_POD_AS_HEX(prev)
+
+      // prevout
+      uint32_t prevout_value = prevout;
+      epee::serialization::selector<is_store>::serialize(prevout_value, stg, hparent_section, "prevout");
+
+      KV_SERIALIZE(script)
+      KV_SERIALIZE(sigset)
+    END_KV_SERIALIZE_MAP()
+
     BEGIN_SERIALIZE_OBJECT()
       FIELD(prev)
       VARINT_FIELD(prevout)
@@ -141,6 +183,12 @@ namespace cryptonote
     std::vector<uint64_t> key_offsets;
     crypto::key_image k_image;      // double spending protection
 
+    BEGIN_KV_SERIALIZE_MAP()
+      KV_SERIALIZE(amount)
+      KV_SERIALIZE(key_offsets)
+      KV_SERIALIZE_VAL_POD_AS_HEX(k_image)
+    END_KV_SERIALIZE_MAP()
+
     BEGIN_SERIALIZE_OBJECT()
       VARINT_FIELD(amount)
       FIELD(key_offsets)
@@ -154,16 +202,21 @@ namespace cryptonote
   typedef boost::variant<txout_to_script, txout_to_scripthash, txout_to_key, txout_to_tagged_key> txout_target_v;
 
   //typedef std::pair<uint64_t, txout> out_t;
+
   struct tx_out
   {
     uint64_t amount;
     txout_target_v target;
 
+    BEGIN_KV_SERIALIZE_MAP()
+      KV_SERIALIZE(amount)
+      KV_SERIALIZE_VARIANT(target)
+    END_KV_SERIALIZE_MAP()
+
     BEGIN_SERIALIZE_OBJECT()
       VARINT_FIELD(amount)
       FIELD(target)
     END_SERIALIZE()
-
 
   };
 
@@ -179,6 +232,17 @@ namespace cryptonote
     std::vector<tx_out> vout;
     //extra
     std::vector<uint8_t> extra;
+
+    BEGIN_KV_SERIALIZE_MAP()
+        // version +
+        uint32_t version_value = version;
+        epee::serialization::selector<is_store>::serialize(version_value, stg, hparent_section, "version");
+        
+        KV_SERIALIZE(unlock_time) // +
+        KV_SERIALIZE(vin)
+        KV_SERIALIZE(vout)
+        KV_SERIALIZE(extra) // +
+    END_KV_SERIALIZE_MAP()
 
     BEGIN_SERIALIZE()
       VARINT_FIELD(version)

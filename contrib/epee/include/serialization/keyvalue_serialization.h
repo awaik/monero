@@ -98,9 +98,19 @@ public: \
 #define KV_SERIALIZE_VAL_POD_AS_BLOB_FORCE_N(varialble, val_name) \
   epee::serialization::selector<is_store>::serialize_t_val_as_blob(this_ref.varialble, stg, hparent_section, val_name); 
 
+#define KV_SERIALIZE_VAL_POD_AS_HEX_FORCE_N(varialble, val_name) \
+  epee::serialization::selector<is_store>::serialize_t_val_as_hex(this_ref.varialble, stg, hparent_section, val_name); 
+
+#define KV_SERIALIZE_VARIANT_N(varialble, val_name) \
+  epee::serialization::selector<is_store>::serialize_t_variant(this_ref.varialble, stg, hparent_section, val_name); 
+
 #define KV_SERIALIZE_VAL_POD_AS_BLOB_N(varialble, val_name) \
   static_assert(std::is_pod<decltype(this_ref.varialble)>::value, "t_type must be a POD type."); \
   KV_SERIALIZE_VAL_POD_AS_BLOB_FORCE_N(varialble, val_name)
+
+#define KV_SERIALIZE_VAL_POD_AS_HEX_N(varialble, val_name) \
+  static_assert(std::is_pod<decltype(this_ref.varialble)>::value, "t_type must be a POD type."); \
+  KV_SERIALIZE_VAL_POD_AS_HEX_FORCE_N(varialble, val_name)
 
 #define KV_SERIALIZE_VAL_POD_AS_BLOB_OPT_N(varialble, val_name, default_value) \
   do { \
@@ -113,13 +123,19 @@ public: \
 #define KV_SERIALIZE_CONTAINER_POD_AS_BLOB_N(varialble, val_name) \
   epee::serialization::selector<is_store>::serialize_stl_container_pod_val_as_blob(this_ref.varialble, stg, hparent_section, val_name);
 
+//#define KV_SERIALIZE_CONTAINER_POD_AS_HEX_N(varialble, val_name) \
+//  epee::serialization::selector<is_store>::serialize_stl_container_pod_val_as_hex(this_ref.varialble, stg, hparent_section, val_name);
+
 #define END_KV_SERIALIZE_MAP() return true;}
 
 #define KV_SERIALIZE(varialble)                           KV_SERIALIZE_N(varialble, #varialble)
 #define KV_SERIALIZE_VAL_POD_AS_BLOB(varialble)           KV_SERIALIZE_VAL_POD_AS_BLOB_N(varialble, #varialble)
+#define KV_SERIALIZE_VAL_POD_AS_HEX(varialble)            KV_SERIALIZE_VAL_POD_AS_HEX_N(varialble, #varialble)
+#define KV_SERIALIZE_VARIANT(varialble)                   KV_SERIALIZE_VARIANT_N(varialble, #varialble)
 #define KV_SERIALIZE_VAL_POD_AS_BLOB_OPT(varialble, def)  KV_SERIALIZE_VAL_POD_AS_BLOB_OPT_N(varialble, #varialble, def)
 #define KV_SERIALIZE_VAL_POD_AS_BLOB_FORCE(varialble)     KV_SERIALIZE_VAL_POD_AS_BLOB_FORCE_N(varialble, #varialble) //skip is_pod compile time check
 #define KV_SERIALIZE_CONTAINER_POD_AS_BLOB(varialble)     KV_SERIALIZE_CONTAINER_POD_AS_BLOB_N(varialble, #varialble)
+//#define KV_SERIALIZE_CONTAINER_POD_AS_HEX(varialble)      KV_SERIALIZE_CONTAINER_POD_AS_HEX_N(varialble, #varialble)
 #define KV_SERIALIZE_OPT(variable,default_value)          KV_SERIALIZE_OPT_N(variable, #variable, default_value)
 
 }

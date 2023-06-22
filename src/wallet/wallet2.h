@@ -65,6 +65,7 @@
 #include "serialization/pair.h"
 #include "serialization/tuple.h"
 #include "serialization/containers.h"
+#include "wipeable_string.h"
 
 #include "wallet_errors.h"
 #include "common/password.h"
@@ -293,6 +294,11 @@ private:
       {
         rct::key m_L;
         rct::key m_R;
+		
+		BEGIN_KV_SERIALIZE_MAP()
+          KV_SERIALIZE_VAL_POD_AS_HEX(m_L)
+          KV_SERIALIZE_VAL_POD_AS_HEX(m_R)
+        END_KV_SERIALIZE_MAP()
 
         BEGIN_SERIALIZE_OBJECT()
           FIELD(m_L)
@@ -303,6 +309,12 @@ private:
       crypto::public_key m_signer;
       std::vector<LR> m_LR;
       std::vector<crypto::key_image> m_partial_key_images; // one per key the participant has
+
+      BEGIN_KV_SERIALIZE_MAP()
+          KV_SERIALIZE_VAL_POD_AS_HEX(m_signer)
+          KV_SERIALIZE(m_LR)
+          KV_SERIALIZE(m_partial_key_images)
+      END_KV_SERIALIZE_MAP()
 
       BEGIN_SERIALIZE_OBJECT()
         FIELD(m_signer)
@@ -322,6 +334,18 @@ private:
       boost::optional<cryptonote::subaddress_receive_info> received;
 
       tx_scan_info_t(): amount(0), money_transfered(0), error(true) {}
+    };
+
+    // TODO: temp solution
+    struct uint64_t_hash_pair
+    {
+      uint64_t uint64_t_value;
+      crypto::hash hash_value;
+
+      BEGIN_KV_SERIALIZE_MAP()
+        KV_SERIALIZE(uint64_t_value)
+        KV_SERIALIZE_VAL_POD_AS_HEX(hash_value)
+      END_KV_SERIALIZE_MAP()  
     };
 
     struct transfer_details
@@ -357,6 +381,42 @@ private:
           error::wallet_internal_error, "Unable to get output public key from output");
         return output_public_key;
       };
+
+      BEGIN_KV_SERIALIZE_MAP()
+        KV_SERIALIZE(m_block_height) //+
+        KV_SERIALIZE(m_tx) // +
+        KV_SERIALIZE_VAL_POD_AS_HEX(m_txid); // +
+        KV_SERIALIZE(m_internal_output_index) // +
+        KV_SERIALIZE(m_global_output_index) // +
+        KV_SERIALIZE(m_spent) // +
+        KV_SERIALIZE(m_frozen) // +
+        KV_SERIALIZE(m_spent_height) // +
+        KV_SERIALIZE_VAL_POD_AS_HEX(m_key_image); // +
+        KV_SERIALIZE_VAL_POD_AS_HEX(m_mask); // +
+        KV_SERIALIZE(m_amount) // +
+        KV_SERIALIZE(m_rct) // +
+        KV_SERIALIZE(m_key_image_known) // +
+        KV_SERIALIZE(m_key_image_request) // +
+        KV_SERIALIZE(m_pk_index) // +
+        KV_SERIALIZE(m_subaddr_index) // +
+        KV_SERIALIZE(m_key_image_partial) // +
+        KV_SERIALIZE(m_multisig_k) // +
+        KV_SERIALIZE(m_multisig_info) // +
+
+        // [TODO] temp solution
+        std::vector<uint64_t_hash_pair> m_uses_value;
+        m_uses_value.resize(m_uses.size());
+
+        std::transform(m_uses.begin(), m_uses.end(), m_uses_value.begin(), [](std::pair<uint64_t, crypto::hash> source_pair) {
+            uint64_t_hash_pair target_pair;
+            target_pair.uint64_t_value = source_pair.first;
+            target_pair.hash_value = source_pair.second;
+            
+            return target_pair;
+        });
+
+        epee::serialization::selector<is_store>::serialize(m_uses_value, stg, hparent_section, "m_uses");
+      END_KV_SERIALIZE_MAP()
 
       BEGIN_SERIALIZE_OBJECT()
         FIELD(m_block_height)

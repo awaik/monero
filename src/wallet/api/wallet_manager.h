@@ -41,7 +41,25 @@ public:
     Wallet * createWallet(const std::string &path, const std::string &password,
                           const std::string &language, NetworkType nettype, uint64_t kdf_rounds = 1) override;
     Wallet * openWallet(const std::string &path, const std::string &password, NetworkType nettype, uint64_t kdf_rounds = 1, WalletListener * listener = nullptr) override;
-    virtual Wallet * recoveryWallet(const std::string &path,
+    
+	Wallet *open_wallet_data_hex(const std::string& password,
+                                NetworkType nettype,
+                                uint64_t kdf_rounds,
+                                const std::string& keys_data_hex,
+                                const std::string& cache_data_hex,
+                                const std::string& daemon_address,
+                                const std::string& daemon_username,
+                                const std::string& daemon_password) override;
+
+    Wallet *open_wallet_data(const std::string& password,
+                                NetworkType nettype,
+                                uint64_t kdf_rounds,
+                                const std::string& keys_data_buf,
+                                const std::string& cache_data_buf,
+                                const std::string& daemon_address,
+                                const std::string& daemon_username,
+                                const std::string& daemon_password) override;
+	virtual Wallet * recoveryWallet(const std::string &path,
                                        const std::string &password,
                                        const std::string &mnemonic,
                                        NetworkType nettype,

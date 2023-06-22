@@ -3,6 +3,12 @@
 /build
 /tags
 log/
+build_scripts/android/build
+build_scripts/android/dist
+build_scripts/ios/build
+build_scripts/ios/dist
+build_scripts/macos/build
+build_scripts/macos/dist
 
 # vim swap files
 *.swp

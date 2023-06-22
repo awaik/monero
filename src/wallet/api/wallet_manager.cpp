@@ -39,6 +39,7 @@
 #include "net/http_client.h"
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
+#include "serialization/binary_utils.h"
 
 #undef MONERO_DEFAULT_LOG_CATEGORY
 #define MONERO_DEFAULT_LOG_CATEGORY "WalletAPI"
@@ -73,6 +74,60 @@ Wallet *WalletManagerImpl::openWallet(const std::string &path, const std::string
     wallet->open(path, password);
     //Refresh addressBook
     wallet->addressBook()->refresh(); 
+    return wallet;
+}
+
+Wallet *WalletManagerImpl::open_wallet_data_hex(const std::string& password,
+                                NetworkType nettype,
+                                uint64_t kdf_rounds,
+                                const std::string& keys_data_hex,
+                                const std::string& cache_data_hex,
+                                const std::string& daemon_address,
+                                const std::string& daemon_username,
+                                const std::string& daemon_password)
+{
+    MTRACE("open_wallet_data_hex(...)");
+
+    cryptonote::blobdata keys_data_binbuff;
+
+    if (!epee::string_tools::parse_hexstr_to_binbuff(keys_data_hex, keys_data_binbuff))
+		throw std::runtime_error("Failed to parse keys_data_hex");
+
+    cryptonote::blobdata cache_data_binbuff;
+
+    if (!epee::string_tools::parse_hexstr_to_binbuff(cache_data_hex, cache_data_binbuff))
+		throw std::runtime_error("Failed to parse cache_data_hex");
+
+    return open_wallet_data(password,
+                                nettype,
+                                kdf_rounds,
+                                keys_data_binbuff,
+                                cache_data_binbuff,
+                                daemon_address,
+                                daemon_username,
+                                daemon_password);
+}
+
+Wallet *WalletManagerImpl::open_wallet_data(const std::string& password,
+                                NetworkType nettype,
+                                uint64_t kdf_rounds,
+                                const std::string& keys_data_buf,
+                                const std::string& cache_data_buf,
+                                const std::string& daemon_address,
+                                const std::string& daemon_username,
+                                const std::string& daemon_password)
+{
+    MTRACE("open_wallet_data(...)");
+    // Load
+    WalletImpl* wallet = new WalletImpl(nettype, kdf_rounds);
+
+    wallet->open_from_data(password,
+                            keys_data_buf,
+                            cache_data_buf,
+                            daemon_address,
+                            daemon_username,
+                            daemon_password);
+
     return wallet;
 }
 

@@ -44,9 +44,14 @@
 #include <boost/format.hpp>
 #include <sstream>
 #include <unordered_map>
+#include <vector>
 
 #include <boost/locale.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/variant.hpp>
+
+#include "serialization/binary_utils.h"
+//#include "../monero_daemon_model.h"
 
 using namespace std;
 using namespace cryptonote;
@@ -718,6 +723,40 @@ bool WalletImpl::open(const std::string &path, const std::string &password)
         LOG_ERROR("Error opening wallet: " << e.what());
         setStatusCritical(e.what());
     }
+    return status() == Status_Ok;
+}
+
+bool WalletImpl::open_from_data(const std::string& password,
+                                const std::string& keys_data_buf,
+                                const std::string& cache_data_buf,
+                                const std::string& daemon_address,
+                                const std::string& daemon_username,
+                                const std::string& daemon_password)
+{
+    clearStatus();
+    m_recoveringFromSeed = false;
+    m_recoveringFromDevice = false;
+    
+    try
+    {
+        m_wallet->load("", password, keys_data_buf, cache_data_buf);
+
+        epee::net_utils::ssl_support_t ssl = daemon_address.rfind("https", 0) == 0 ?
+                        epee::net_utils::ssl_support_t::e_ssl_support_enabled :
+                        epee::net_utils::ssl_support_t::e_ssl_support_disabled;
+
+        boost::optional<epee::net_utils::http::login> login{};
+        login.emplace(daemon_username, daemon_password);
+
+        m_wallet->init(daemon_address, login, "", 0, true, ssl);
+        //wallet->init_common();
+
+        m_password = password;
+    } catch (const std::exception &e) {
+        LOG_ERROR("Error opening wallet: " << e.what());
+        setStatusCritical(e.what());
+    }
+
     return status() == Status_Ok;
 }
 
@@ -2654,6 +2693,323 @@ uint64_t WalletImpl::getBytesReceived()
 uint64_t WalletImpl::getBytesSent()
 {
     return m_wallet->get_bytes_sent();
+}
+
+// (c) MarketKernel
+bool WalletImpl::freeze(const std::string& key_image)
+{
+	crypto::key_image raw_key_image;
+
+	if (!epee::string_tools::hex_to_pod(key_image, raw_key_image))
+	{
+		setStatusError(tr("Failed to parse key image"));
+		return false;
+	}
+
+	m_wallet->freeze(raw_key_image);
+	return true;
+}
+
+bool WalletImpl::thaw(const std::string& key_image)
+{
+	crypto::key_image raw_key_image;
+
+	if (!epee::string_tools::hex_to_pod(key_image, raw_key_image))
+	{
+		setStatusError(tr("Failed to parse key image"));
+		return false;
+	}
+
+	m_wallet->thaw(raw_key_image);
+	return true;
+}
+
+bool WalletImpl::frozen(const std::string& key_image) const
+{
+	crypto::key_image raw_key_image;
+
+	if (!epee::string_tools::hex_to_pod(key_image, raw_key_image))
+		throw std::runtime_error("Failed to parse key image");
+
+	return m_wallet->frozen(raw_key_image);
+}
+
+std::string WalletImpl::prepare_multisig()
+{
+	if (m_wallet->multisig())
+		throw std::runtime_error("This wallet is already multisig");
+
+	if (m_wallet->watch_only())
+		throw std::runtime_error("This wallet is view-only and cannot be made multisig");
+
+	m_wallet->enable_multisig(true);
+
+	return m_wallet->get_multisig_first_kex_msg();
+}
+
+MoneroMultisigSignResult WalletImpl::sign_multisig_tx_hex(const std::string& multisig_tx_hex)
+{
+	// validate state and args
+	bool ready;
+	uint32_t threshold, total;
+
+	if (!m_wallet->multisig(&ready, &threshold, &total))
+		throw std::runtime_error("This wallet is not multisig");
+
+	if (!ready)
+		throw std::runtime_error("This wallet is multisig, but not yet finalized");
+
+	// validate and parse multisig tx hex as blob
+	cryptonote::blobdata multisig_tx_blob;
+
+	if (!epee::string_tools::parse_hexstr_to_binbuff(multisig_tx_hex, multisig_tx_blob))
+	{
+		throw std::runtime_error("Failed to parse hex");
+	}
+
+	// validate and parse blob as multisig_tx_set
+	tools::wallet2::multisig_tx_set ms_tx_set;
+	if (!m_wallet->load_multisig_tx(multisig_tx_blob, ms_tx_set, NULL))
+	{
+		throw std::runtime_error("Failed to parse multisig tx data");
+	}
+
+	// sign multisig txs
+	bool success = false;
+	std::vector<crypto::hash> tx_hashes;
+
+	try
+	{
+		success = m_wallet->sign_multisig_tx(ms_tx_set, tx_hashes);
+	}
+	catch (const std::exception& e)
+	{
+		std::string msg = std::string("Failed to sign multisig tx: ") + e.what();
+		throw std::runtime_error(msg);
+	}
+
+	if (!success)
+		throw std::runtime_error("Failed to sign multisig tx");
+
+	// save multisig txs
+	std::string signed_multisig_tx_hex = epee::string_tools::buff_to_hex_nodelimer(m_wallet->save_multisig_tx(ms_tx_set));
+
+	// build sign result
+	MoneroMultisigSignResult result;
+
+	result.m_signed_multisig_tx_hex = signed_multisig_tx_hex;
+
+	for (const crypto::hash& tx_hash : tx_hashes)
+	{
+		result.m_tx_hashes.push_back(epee::string_tools::pod_to_hex(tx_hash));
+	}
+
+	return result;
+}
+
+std::vector<std::string> WalletImpl::submit_multisig_tx_hex(const std::string& signed_multisig_tx_hex)
+{
+	// validate state and args
+	bool ready;
+	uint32_t threshold, total;
+
+	if (!m_wallet->multisig(&ready, &threshold, &total))
+		throw std::runtime_error("This wallet is not multisig");
+
+	if (!ready)
+		throw std::runtime_error("This wallet is multisig, but not yet finalized");
+
+	// validate signed multisig tx hex as blob
+	cryptonote::blobdata signed_multisig_tx_blob;
+
+	if (!epee::string_tools::parse_hexstr_to_binbuff(signed_multisig_tx_hex, signed_multisig_tx_blob))
+	{
+		throw std::runtime_error("Failed to parse hex");
+	}
+
+	// validate and parse blob as multisig_tx_set
+	tools::wallet2::multisig_tx_set signed_multisig_tx_set;
+
+	if (!m_wallet->load_multisig_tx(signed_multisig_tx_blob, signed_multisig_tx_set, NULL))
+	{
+		throw std::runtime_error("Failed to parse multisig tx data");
+	}
+
+	// ensure sufficient number of participants have signed
+	if (signed_multisig_tx_set.m_signers.size() < threshold)
+	{
+		throw std::runtime_error("Not enough signers signed this transaction");
+	}
+
+	// commit the transactions
+	std::vector<std::string> tx_hashes;
+
+	try
+	{
+		for (auto& pending_tx : signed_multisig_tx_set.m_ptx)
+		{
+			m_wallet->commit_tx(pending_tx);
+			tx_hashes.push_back(epee::string_tools::pod_to_hex(cryptonote::get_transaction_hash(pending_tx.tx)));
+		}
+	}
+	catch (const std::exception& e)
+	{
+		std::string msg = std::string("Failed to submit multisig tx: ") + e.what();
+		throw std::runtime_error(msg);
+	}
+
+	// return the resulting tx hashes
+	return tx_hashes;
+}
+
+// struct test_inner_struct
+// {
+//     uint64_t value1 = 5;
+//     std::vector<uint64_t> vec1;
+
+//     public:
+
+//     test_inner_struct()
+//     {
+//         vec1.push_back(7);
+//         vec1.push_back(8);
+//         vec1.push_back(9);
+//     }
+
+//     BEGIN_KV_SERIALIZE_MAP()
+//     KV_SERIALIZE(value1)
+//     KV_SERIALIZE(vec1)
+//     END_KV_SERIALIZE_MAP()
+// };
+
+// struct test_hex
+// {
+//     char test1[5];
+
+//     test_hex()
+//     {
+//         test1[0] = 't';
+//         test1[1] = 'e';
+//         test1[2] = 's';
+//         test1[3] = 't';
+//         test1[4] = '\0';
+//     }
+// };
+
+// struct test_struct1
+// {
+//     uint64_t value1 = 7;
+//     std::vector<uint64_t> vec1;
+//     std::vector<test_inner_struct> inner_struct_vec;
+//     test_inner_struct inner_struct;
+//     std::vector<crypto::key_image> hex1vec;
+
+//     std::vector<test_hex> hex2vec;
+    
+//     // std::vector<boost::variant<crypto::key_image, test_hex>> var_list1;
+//     // std::vector<boost::variant<crypto::key_image, test_inner_struct>> var_list2;
+
+//     boost::variant<test_inner_struct> m_var1;
+
+//     public:
+
+//     test_struct1()
+//     {
+//         vec1.push_back(1);
+//         vec1.push_back(3);
+//         vec1.push_back(7);
+
+//         test_inner_struct inner_struct1;
+//         inner_struct_vec.push_back(inner_struct1);
+
+//         crypto::key_image test_hex_obj;
+//         hex1vec.push_back(test_hex_obj);
+
+//         test_hex hex2;
+//         hex2vec.push_back(hex2);
+        
+//         // boost::variant<crypto::key_image, test_hex> var1;
+//         // test_hex hex3;
+//         // var1 = hex3;
+
+//         // var_list1.push_back(var1);
+
+//         // // var_list2
+//         // boost::variant<crypto::key_image, test_inner_struct> var2;
+//         // var2 = test_inner_struct();
+
+//         // var_list2.push_back(var2);
+
+//         // m_var1
+//         m_var1 = test_inner_struct();
+//     }
+
+//     BEGIN_KV_SERIALIZE_MAP()
+//     KV_SERIALIZE(value1)
+//     //KV_SERIALIZE(vec1)
+//     KV_SERIALIZE(inner_struct_vec)
+//     KV_SERIALIZE(inner_struct)
+//     KV_SERIALIZE(hex1vec)
+//     KV_SERIALIZE(hex2vec)
+//     // KV_SERIALIZE(var_list1)
+//     // KV_SERIALIZE(var_list2)
+//     // KV_SERIALIZE(m_var1)
+//     END_KV_SERIALIZE_MAP()
+// };
+
+struct transfer_details_list
+{
+     std::vector<tools::wallet2::transfer_details> transfers;
+
+      BEGIN_KV_SERIALIZE_MAP()
+        KV_SERIALIZE(transfers)
+      END_KV_SERIALIZE_MAP()
+};
+
+std::string WalletImpl::get_transfers()
+{
+    // test_struct1 test_struct;
+    // std::string json = epee::serialization::store_t_to_json(test_struct);
+
+    std::vector<tools::wallet2::transfer_details> transfers;
+    m_wallet->get_transfers(transfers);
+    transfer_details_list list;
+    list.transfers = transfers;
+    std::string json = epee::serialization::store_t_to_json(list);
+
+    return json;
+}
+
+std::string WalletImpl::get_keys_data_hex(const std::string& password, bool view_only) const
+{
+    std::string buf = get_keys_data_buf(password, view_only);
+    return epee::string_tools::buff_to_hex_nodelimer(buf);
+}
+
+std::string WalletImpl::get_keys_data_buf(const std::string& password, bool view_only) const
+{
+    boost::optional<tools::wallet2::keys_file_data> keys_file_data = m_wallet->get_keys_file_data(password, view_only);
+
+    std::string buf;
+    ::serialization::dump_binary(keys_file_data.get(), buf);
+
+    return buf;
+}
+
+std::string WalletImpl::get_cache_data_hex(const std::string& password) const
+{
+    std::string buf = get_cache_data_buf(password);
+    return epee::string_tools::buff_to_hex_nodelimer(buf);
+}
+
+std::string WalletImpl::get_cache_data_buf(const std::string& password) const
+{
+    boost::optional<tools::wallet2::cache_file_data> cache_file_data = m_wallet->get_cache_file_data(password);
+
+    std::string buf;
+    ::serialization::dump_binary(cache_file_data.get(), buf);
+
+    return buf;
 }
 
 } // namespace
