@@ -5842,35 +5842,7 @@ void wallet2::store_to(const std::string &path, const epee::wipeable_string &pas
   const std::string old_address_file = m_wallet_file + ".address.txt";
   const std::string old_mms_file = m_mms_file;
 
-  // save keys to the new file
-  // if we here, main wallet file is saved and we only need to save keys and address files???
-  if (!same_file)
-  {
-    prepare_file_names(path);
-
-    bool r = store_keys(m_keys_file, password, false);
-    THROW_WALLET_EXCEPTION_IF(!r, error::file_save_error, m_keys_file);
-
-    // remove old keys file
-    r = boost::filesystem::remove(old_keys_file);
-    if (!r)
-      LOG_ERROR("error removing file: " << old_keys_file);
-
-    if (boost::filesystem::exists(old_address_file))
-    {
-      // save address to the new file
-      const std::string address_file = m_wallet_file + ".address.txt";
-      r = save_to_file(address_file, m_account.get_public_address_str(m_nettype), true);
-      THROW_WALLET_EXCEPTION_IF(!r, error::file_save_error, m_wallet_file);
-      // remove old address file
-      r = boost::filesystem::remove(old_address_file);
-
-      if (!r)
-        LOG_ERROR("error removing file: " << old_address_file);
-    }
-  }
-
-  // save to new file
+    // save to new file
   #ifdef WIN32
     // On Windows avoid using std::ofstream which does not work with UTF-8 filenames
     // The price to pay is temporary higher memory consumption for string stream + binary archive
@@ -5889,19 +5861,52 @@ void wallet2::store_to(const std::string &path, const epee::wipeable_string &pas
     THROW_WALLET_EXCEPTION_IF(!success || !ostr.good(), error::file_save_error, new_file);
   #endif
 
-  if (same_file)
+  // save keys to the new file
+  // if we here, main wallet file is saved and we only need to save keys and address files
+  if (!same_file)
+  {
+    prepare_file_names(path);
+
+    bool r = store_keys(m_keys_file, password, false);
+    THROW_WALLET_EXCEPTION_IF(!r, error::file_save_error, m_keys_file);
+
+    // remove old keys file
+    r = boost::filesystem::remove(old_keys_file);
+    if (!r)
+      LOG_ERROR("error removing file: " << old_keys_file);
+
+    // remove old wallet file
+    r = boost::filesystem::remove(old_file);
+
+    if (!r)
+      LOG_ERROR("error removing file: " << old_file);
+
+    if (boost::filesystem::exists(old_address_file))
+    {
+      // save address to the new file
+      const std::string address_file = m_wallet_file + ".address.txt";
+      r = save_to_file(address_file, m_account.get_public_address_str(m_nettype), true);
+      THROW_WALLET_EXCEPTION_IF(!r, error::file_save_error, m_wallet_file);
+      // remove old address file
+      r = boost::filesystem::remove(old_address_file);
+
+      if (!r)
+        LOG_ERROR("error removing file: " << old_address_file);
+    }
+
+    // remove old message store file
+    if (boost::filesystem::exists(old_mms_file))
+    {
+      r = boost::filesystem::remove(old_mms_file);
+      if (!r)
+        LOG_ERROR("error removing file: " << old_mms_file);
+    }
+  }
+  else
   {
     // here we have "*.new" file, we need to rename it to be without ".new"
     std::error_code e = tools::replace_file(new_file, m_wallet_file);
     THROW_WALLET_EXCEPTION_IF(e, error::file_save_error, m_wallet_file, e);
-  }
-  else
-  {
-    // remove old wallet file
-    bool r = boost::filesystem::remove(old_file);
-
-    if (!r)
-      LOG_ERROR("error removing file: " << old_file);
   }
 
   // mms
@@ -5910,17 +5915,6 @@ void wallet2::store_to(const std::string &path, const epee::wipeable_string &pas
     // While the "m_message_store" object of course always exist, a file for the message
     // store should only exist if the MMS is really active
     m_message_store.write_to_file(get_multisig_wallet_state(), m_mms_file);
-  }
-
-  if (!same_file)
-  {
-        // remove old message store file
-    if (boost::filesystem::exists(old_mms_file))
-    {
-      bool r = boost::filesystem::remove(old_mms_file);
-      if (!r)
-        LOG_ERROR("error removing file: " << old_mms_file);
-    }
   }
 }
 //----------------------------------------------------------------------------------------------------
