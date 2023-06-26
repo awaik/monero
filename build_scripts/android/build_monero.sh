@@ -6,7 +6,7 @@ MONERO_SRC_DIR=${BUILD_DIR}/monero
 
 mkdir -p $MONERO_SRC_DIR
 cd $MONERO_SRC_DIR
-rsync -aP --exclude=build_scripts ${MONERO_SRC_DIR}/../../../../../ ${MONERO_SRC_DIR}/
+rsync -aP --exclude=build_scripts ${MONERO_SRC_DIR}/../../../../ ${MONERO_SRC_DIR}/
 
 for arch in "aarch" "aarch64" "i686" "x86_64"
 do
