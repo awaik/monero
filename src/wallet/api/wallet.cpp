@@ -837,6 +837,34 @@ std::string WalletImpl::seed(const std::string& seed_offset) const
     return std::string(seed.data(), seed.size()); // TODO
 }
 
+std::string WalletImpl::get_mnemonic() const
+{
+    epee::wipeable_string seed;
+    bool ready;
+
+    if (m_wallet->multisig(&ready))
+    {
+      if (!ready)
+        throw std::runtime_error("This wallet is multisig, but not yet finalized");
+
+      if (!m_wallet->get_multisig_seed(seed))
+        throw std::runtime_error("Failed to get multisig seed.");
+    }
+    else
+    {
+      if (m_wallet->watch_only())
+        return "";
+
+      if (!m_wallet->is_deterministic())
+        return "";
+
+      if (!m_wallet->get_seed(seed))
+        throw std::runtime_error("Failed to get seed.");
+    }
+
+    return std::string(seed.data(), seed.size());
+}
+
 std::string WalletImpl::getSeedLanguage() const
 {
     return m_wallet->get_seed_language();
