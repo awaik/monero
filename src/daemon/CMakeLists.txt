@@ -33,6 +33,9 @@ set(daemon_sources
   executor.cpp
   main.cpp
   rpc_command_executor.cpp
+
+  monero_daemon_model.cpp
+  monero_daemon.cpp
 )
 
 set(daemon_headers)

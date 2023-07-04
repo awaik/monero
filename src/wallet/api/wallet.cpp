@@ -102,6 +102,10 @@ namespace {
         return checkMultisigWalletReady(wallet.get());
     }
 
+    void checkMultisigWalletReady(const std::shared_ptr<tools::wallet2> &wallet) {
+        return checkMultisigWalletReady(wallet.get());
+    }
+
     void checkMultisigWalletNotReady(const tools::wallet2* wallet) {
         if (!wallet) {
             throw runtime_error("Wallet is not initialized yet");
@@ -116,6 +120,11 @@ namespace {
             throw runtime_error("Multisig wallet is already finalized");
         }
     }
+
+    void checkMultisigWalletNotReady(const std::shared_ptr<tools::wallet2> &wallet) {
+        return checkMultisigWalletNotReady(wallet.get());
+    }
+
     void checkMultisigWalletNotReady(const std::unique_ptr<tools::wallet2> &wallet) {
         return checkMultisigWalletNotReady(wallet.get());
     }

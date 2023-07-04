@@ -268,7 +268,7 @@ private:
     friend class SubaddressImpl;
     friend class SubaddressAccountImpl;
 
-    std::unique_ptr<tools::wallet2> m_wallet;
+    std::shared_ptr<tools::wallet2> m_wallet;
     mutable boost::mutex m_statusMutex;
     mutable int m_status;
     mutable std::string m_errorString;
