@@ -33,7 +33,7 @@
 
 #include "wallet/api/wallet2_api.h"
 #include "wallet/wallet2.h"
-//#include "wallet/monero_wallet_full.h"
+#include "wallet/monero_ecosystem/monero_wallet_full.h"
 
 #include <string>
 #include <boost/thread/mutex.hpp>
@@ -275,7 +275,7 @@ private:
     friend class SubaddressAccountImpl;
 
     std::shared_ptr<tools::wallet2> m_wallet;
-    //std::unique_ptr<monero::monero_wallet_full> m_monero_wallet_full;
+    std::unique_ptr<monero::monero_wallet_full> m_monero_wallet_full;
 
     mutable boost::mutex m_statusMutex;
     mutable int m_status;
