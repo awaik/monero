@@ -52,8 +52,8 @@
 
 #include "monero_wallet_model.h"
 
-#include "utils/gen_utils.h"
-#include "utils/monero_utils.h"
+#include "gen_utils.h"
+#include "monero_utils.h"
 #include <iostream>
 
 /**

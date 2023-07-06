@@ -52,7 +52,7 @@
 
 #include "monero_wallet_keys.h"
 
-#include "utils/monero_utils.h"
+#include "monero_utils.h"
 #include <chrono>
 #include <iostream>
 #include "mnemonics/electrum-words.h"

@@ -52,7 +52,7 @@
 
 #pragma once
 
-#include "daemon/monero_daemon_model.h"
+#include "monero_daemon_model.h"
 
 using namespace monero;
 

@@ -33,6 +33,7 @@
 
 #include "wallet/api/wallet2_api.h"
 #include "wallet/wallet2.h"
+//#include "wallet/monero_wallet_full.h"
 
 #include <string>
 #include <boost/thread/mutex.hpp>
@@ -241,10 +242,15 @@ public:
 	virtual std::vector<std::string> submit_multisig_tx_hex(const std::string &signed_multisig_tx_hex) override;
     virtual std::string get_transfers() override;
 
-    virtual std::string get_keys_data_hex(const std::string& password, bool view_only) const  override;
-    virtual std::string get_keys_data_buf(const std::string& password, bool view_only) const  override;
-    virtual std::string get_cache_data_hex(const std::string& password) const  override;
-    virtual std::string get_cache_data_buf(const std::string& password) const  override;
+    virtual std::string get_keys_data_hex(const std::string& password, bool view_only) const override;
+    virtual std::string get_keys_data_buf(const std::string& password, bool view_only) const override;
+    virtual std::string get_cache_data_hex(const std::string& password) const override;
+    virtual std::string get_cache_data_buf(const std::string& password) const override;
+
+    virtual std::string get_txs(const std::string& tx_query_json) const override;
+    virtual std::string get_outputs(const std::string& output_query_json) const override;
+    virtual std::string sweep_unlocked(const std::string& config_json) const override;
+    virtual std::string describe_tx_set(const std::string& tx_set_json) const override;
 
 private:
     void clearStatus() const;
@@ -269,6 +275,8 @@ private:
     friend class SubaddressAccountImpl;
 
     std::shared_ptr<tools::wallet2> m_wallet;
+    //std::unique_ptr<monero::monero_wallet_full> m_monero_wallet_full;
+
     mutable boost::mutex m_statusMutex;
     mutable int m_status;
     mutable std::string m_errorString;

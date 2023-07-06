@@ -51,7 +51,7 @@
 #include <boost/variant.hpp>
 
 #include "serialization/binary_utils.h"
-//#include "../monero_daemon_model.h"
+//#include "common/monero_utils.h"
 
 using namespace std;
 using namespace cryptonote;
@@ -442,6 +442,7 @@ WalletImpl::WalletImpl(NetworkType nettype, uint64_t kdf_rounds)
     , m_refreshShouldRescan(false)
 {
     m_wallet.reset(new tools::wallet2(static_cast<cryptonote::network_type>(nettype), kdf_rounds, true));
+    //m_monero_wallet_full.reset(new monero_wallet_full(m_wallet));
     m_history.reset(new TransactionHistoryImpl(this));
     m_wallet2Callback.reset(new Wallet2CallbackImpl(this));
     m_wallet->callback(m_wallet2Callback.get());
@@ -3047,6 +3048,130 @@ std::string WalletImpl::get_cache_data_buf(const std::string& password) const
     ::serialization::dump_binary(cache_file_data.get(), buf);
 
     return buf;
+}
+
+std::string WalletImpl::get_txs(const std::string& tx_query_json) const
+{
+    // shared_ptr<monero_tx_query> tx_query = monero_tx_query::deserialize_from_block(tx_query_json);
+
+    // vector<string> missing_tx_hashes;
+    // vector<shared_ptr<monero_tx_wallet>> txs = m_monero_wallet_full->get_txs(*tx_query, missing_tx_hashes);
+
+    // // return unique blocks to preserve model relationships as tree
+    // shared_ptr<monero_block> unconfirmed_block = nullptr; // placeholder to store unconfirmed txs in return json
+    // vector<shared_ptr<monero_block>> blocks;
+    // unordered_set<shared_ptr<monero_block>> seen_block_ptrs;
+    
+    // for (const shared_ptr<monero_tx_wallet>& tx : txs)
+    // {
+    //   if (tx->m_block == boost::none)
+    //   {
+    //     if (unconfirmed_block == nullptr)
+    //         unconfirmed_block = make_shared<monero_block>();
+    //     tx->m_block = unconfirmed_block;
+    //     unconfirmed_block->m_txs.push_back(tx);
+    //   }
+      
+    //   unordered_set<shared_ptr<monero_block>>::const_iterator got = seen_block_ptrs.find(tx->m_block.get());
+      
+    //   if (got == seen_block_ptrs.end())
+    //   {
+    //     seen_block_ptrs.insert(tx->m_block.get());
+    //     blocks.push_back(tx->m_block.get());
+    //   }
+    // }
+    
+    // // wrap and serialize blocks
+    // rapidjson::Document doc;
+    // doc.SetObject();
+    // doc.AddMember("blocks", monero_utils::to_rapidjson_val(doc.GetAllocator(), blocks), doc.GetAllocator());
+    
+    // if (!missing_tx_hashes.empty())
+    //     doc.AddMember("missingTxHashes", monero_utils::to_rapidjson_val(doc.GetAllocator(), missing_tx_hashes), doc.GetAllocator());
+    
+    // std::string blocks_json = monero_utils::serialize(doc);
+
+    // return blocks_json;
+
+    return "";
+}
+
+std::string WalletImpl::get_outputs(const std::string& output_query_json) const
+{
+    // shared_ptr<monero_output_query> output_query = monero_output_query::deserialize_from_block(output_query_json);
+    // MTRACE("Fetching outputs with request: " << output_query->serialize());
+
+    // // get outputs
+    // vector<shared_ptr<monero_output_wallet>> outputs = m_monero_wallet_full->get_outputs(*output_query);
+
+    // // return unique blocks to preserve model relationships as tree
+    // vector<monero_block> blocks;
+    // unordered_set<shared_ptr<monero_block>> seen_block_ptrs;
+
+    // for (auto const& output : outputs)
+    // {
+    //   shared_ptr<monero_tx_wallet> tx = static_pointer_cast<monero_tx_wallet>(output->m_tx);
+
+    //   if (tx->m_block == boost::none)
+    //     throw runtime_error("Need to handle unconfirmed output");
+
+    //   unordered_set<shared_ptr<monero_block>>::const_iterator got = seen_block_ptrs.find(*tx->m_block);
+      
+    //   if (got == seen_block_ptrs.end())
+    //   {
+    //     seen_block_ptrs.insert(*tx->m_block);
+    //     blocks.push_back(**tx->m_block);
+    //   }
+    // }
+
+    // // wrap and serialize blocks
+    // rapidjson::Document doc;
+    // doc.SetObject();
+    // doc.AddMember("blocks", monero_utils::to_rapidjson_val(doc.GetAllocator(), blocks), doc.GetAllocator());
+    // std::string blocks_json = monero_utils::serialize(doc);
+
+    // return blocks_json;
+
+    return "";
+}
+
+std::string WalletImpl::sweep_unlocked(const std::string& config_json) const
+{
+    // // deserialize send request
+    // shared_ptr<monero_tx_config> config = monero_tx_config::deserialize(config_json);
+    // //MTRACE("Deserialized tx config, re-serialized: " << config->serialize());
+
+    // // submit request with configuration
+    // vector<shared_ptr<monero_tx_wallet>> txs = m_monero_wallet_full->sweep_unlocked(*config);
+
+    // // collect tx sets
+    // vector<shared_ptr<monero_tx_set>> tx_sets;
+
+    // for (int i = 0; i < txs.size(); i++)
+    // {
+    //     if (std::find(tx_sets.begin(), tx_sets.end(), txs[i]->m_tx_set.get()) == tx_sets.end())
+    //         tx_sets.push_back(txs[i]->m_tx_set.get());
+    // }
+
+    // // wrap and serialize tx sets
+    // rapidjson::Document doc;
+    // doc.SetObject();
+    // doc.AddMember("txSets", monero_utils::to_rapidjson_val(doc.GetAllocator(), tx_sets), doc.GetAllocator());
+    // std::string tx_sets_json = monero_utils::serialize(doc);
+
+    // return tx_sets_json;
+
+    return "";
+}
+
+std::string WalletImpl::describe_tx_set(const std::string& tx_set_json) const
+{
+    // monero_tx_set tx_set = monero_tx_set::deserialize(tx_set_json);
+    // monero_tx_set described_tx_set = m_monero_wallet_full->describe_tx_set(tx_set);
+
+    // return described_tx_set.serialize();
+
+    return "";
 }
 
 } // namespace

@@ -42,6 +42,10 @@ set(wallet_sources
   monero_wallet_full.cpp
   monero_wallet_keys.cpp
   monero_wallet_model.cpp
+  monero_utils.cpp
+  gen_utils.cpp
+  monero_daemon_model.cpp
+  monero_daemon.cpp
 )
 
 monero_find_all_headers(wallet_private_headers "${CMAKE_CURRENT_SOURCE_DIR}")

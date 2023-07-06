@@ -1120,6 +1120,11 @@ struct Wallet
     virtual std::string get_keys_data_hex(const std::string& password, bool view_only) const = 0;
     virtual std::string get_cache_data_buf(const std::string& password) const = 0;
     virtual std::string get_cache_data_hex(const std::string& password) const = 0;
+
+    virtual std::string get_txs(const std::string& tx_query_json) const = 0;
+    virtual std::string get_outputs(const std::string& output_query_json) const = 0;
+    virtual std::string sweep_unlocked(const std::string& config_json) const = 0;
+    virtual std::string describe_tx_set(const std::string& tx_set_json) const = 0;
 };
 
 /**

@@ -55,7 +55,7 @@
 #ifndef monero_utils_h
 #define monero_utils_h
 
-#include "wallet/monero_wallet_model.h"
+#include "monero_wallet_model.h"
 #include "cryptonote_basic/cryptonote_basic.h"
 #include "serialization/keyvalue_serialization.h" // TODO: consolidate with other binary deps?
 #include "storages/portable_storage.h"
@@ -73,8 +73,6 @@ namespace monero_utils
 
   // -------------------------------- UTILS -----------------------------------
 
-  void set_log_level(int level);
-  void configure_logging(const std::string& path, bool console);
   monero_integrated_address get_integrated_address(monero_network_type network_type, const std::string& standard_address, const std::string& payment_id);
   bool is_valid_address(const std::string& address, monero_network_type network_type);
   bool is_valid_private_view_key(const std::string& private_view_key);

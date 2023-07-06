@@ -53,7 +53,7 @@
 #pragma once
 
 #include "monero_wallet.h"
-#include "wallet/wallet2.h"
+#include "wallet2.h"
 
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
