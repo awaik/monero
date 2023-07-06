@@ -1045,7 +1045,7 @@ namespace monero {
   monero_wallet_full* monero_wallet_full::open_wallet(const std::string& path, const std::string& password, const monero_network_type network_type) {
     MTRACE("open_wallet(" << path << ", ***, " << network_type << ")");
     monero_wallet_full* wallet = new monero_wallet_full();
-    wallet->m_w2 = std::unique_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(network_type), 1, true));
+    wallet->m_w2 = std::shared_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(network_type), 1, true));
     wallet->m_w2->load(path, password);
     wallet->m_w2->init("");
     wallet->init_common();
@@ -1055,8 +1055,8 @@ namespace monero {
   monero_wallet_full* monero_wallet_full::open_wallet_data(const std::string& password, const monero_network_type network_type, const std::string& keys_data, const std::string& cache_data, const monero_rpc_connection& daemon_connection, std::unique_ptr<epee::net_utils::http::http_client_factory> http_client_factory) {
     MTRACE("open_wallet_data(...)");
     monero_wallet_full* wallet = new monero_wallet_full();
-    if (http_client_factory == nullptr) wallet->m_w2 = std::unique_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(network_type), 1, true));
-    else wallet->m_w2 = std::unique_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(network_type), 1, true, std::move(http_client_factory)));
+    if (http_client_factory == nullptr) wallet->m_w2 = std::shared_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(network_type), 1, true));
+    else wallet->m_w2 = std::shared_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(network_type), 1, true, std::move(http_client_factory)));
     wallet->m_w2->load("", password, keys_data, cache_data);
     wallet->m_w2->init("");
     wallet->set_daemon_connection(daemon_connection);
@@ -1115,8 +1115,8 @@ namespace monero {
     if (!config.m_seed_offset.get().empty()) recovery_key = cryptonote::decrypt_key(recovery_key, config.m_seed_offset.get());
 
     // initialize wallet
-    if (http_client_factory == nullptr) wallet->m_w2 = std::unique_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(config.m_network_type.get()), 1, true));
-    else wallet->m_w2 = std::unique_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(config.m_network_type.get()), 1, true, std::move(http_client_factory)));
+    if (http_client_factory == nullptr) wallet->m_w2 = std::shared_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(config.m_network_type.get()), 1, true));
+    else wallet->m_w2 = std::shared_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(config.m_network_type.get()), 1, true, std::move(http_client_factory)));
     wallet->set_daemon_connection(config.get_server());
     wallet->m_w2->set_seed_language(language);
     if (config.m_account_lookahead != boost::none) wallet->m_w2->set_subaddress_lookahead(config.m_account_lookahead.get(), config.m_subaddress_lookahead.get());
@@ -1180,8 +1180,8 @@ namespace monero {
     if (!monero_utils::is_valid_language(config.m_language.get())) throw std::runtime_error("Unknown language: " + config.m_language.get());
 
     // initialize wallet
-    if (http_client_factory == nullptr) wallet->m_w2 = std::unique_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(config.m_network_type.get()), 1, true));
-    else wallet->m_w2 = std::unique_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(config.m_network_type.get()), 1, true, std::move(http_client_factory)));
+    if (http_client_factory == nullptr) wallet->m_w2 = std::shared_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(config.m_network_type.get()), 1, true));
+    else wallet->m_w2 = std::shared_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(config.m_network_type.get()), 1, true, std::move(http_client_factory)));
     if (config.m_account_lookahead != boost::none) wallet->m_w2->set_subaddress_lookahead(config.m_account_lookahead.get(), config.m_subaddress_lookahead.get());
     if (has_spend_key && has_view_key) wallet->m_w2->generate(config.m_path.get(), config.m_password.get(), address_info.address, spend_key_sk, view_key_sk);
     else if (has_spend_key) wallet->m_w2->generate(config.m_path.get(), config.m_password.get(), spend_key_sk, true, false);
@@ -1196,8 +1196,8 @@ namespace monero {
   monero_wallet_full* monero_wallet_full::create_wallet_random(const monero_wallet_config& config, std::unique_ptr<epee::net_utils::http::http_client_factory> http_client_factory) {
     MTRACE("create_wallet_random(...)");
     monero_wallet_full* wallet = new monero_wallet_full();
-    if (http_client_factory == nullptr) wallet->m_w2 = std::unique_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(config.m_network_type.get()), 1, true));
-    else wallet->m_w2 = std::unique_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(config.m_network_type.get()), 1, true, std::move(http_client_factory)));
+    if (http_client_factory == nullptr) wallet->m_w2 = std::shared_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(config.m_network_type.get()), 1, true));
+    else wallet->m_w2 = std::shared_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(config.m_network_type.get()), 1, true, std::move(http_client_factory)));
     wallet->set_daemon_connection(config.get_server());
     wallet->m_w2->set_seed_language(config.m_language.get());
     crypto::secret_key secret_key;
@@ -1256,6 +1256,15 @@ namespace monero {
   }
 
   // ----------------------------- WALLET METHODS -----------------------------
+
+  monero_wallet_full::monero_wallet_full()
+  {
+  }
+
+  monero_wallet_full::monero_wallet_full(std::shared_ptr<tools::wallet2> relativeWallet)
+  {
+    m_w2 = relativeWallet;
+  }
 
   monero_wallet_full::~monero_wallet_full() {
     MTRACE("~monero_wallet_full()");
@@ -1346,10 +1355,17 @@ namespace monero {
   }
 
   std::string monero_wallet_full::get_mnemonic() const {
-    if (m_w2->watch_only()) return "";
-    epee::wipeable_string wipeable_mnemonic;
-    m_w2->get_seed(wipeable_mnemonic);
-    return std::string(wipeable_mnemonic.data(), wipeable_mnemonic.size());
+    epee::wipeable_string seed;
+    bool ready;
+    if (m_w2->multisig(&ready)) {
+      if (!ready) throw std::runtime_error("This wallet is multisig, but not yet finalized");
+      if (!m_w2->get_multisig_seed(seed)) throw std::runtime_error("Failed to get multisig seed.");
+    } else {
+      if (m_w2->watch_only()) return "";
+      if (!m_w2->is_deterministic()) return "";
+      if (!m_w2->get_seed(seed)) throw std::runtime_error("Failed to get seed.");
+    }
+    return std::string(seed.data(), seed.size());
   }
 
   std::string monero_wallet_full::get_mnemonic_language() const {
@@ -1484,19 +1500,16 @@ namespace monero {
   }
 
   void monero_wallet_full::add_listener(monero_wallet_listener& listener) {
-    MTRACE("add_listener()");
     m_listeners.insert(&listener);
     m_w2_listener->update_listening();
   }
 
   void monero_wallet_full::remove_listener(monero_wallet_listener& listener) {
-    MTRACE("remove_listener()");
     m_listeners.erase(&listener);
     if (!m_sync_loop_running) m_w2_listener->update_listening(); // listener is unregistered after sync to avoid segfault
   }
 
   std::set<monero_wallet_listener*> monero_wallet_full::get_listeners() {
-    MTRACE("get_listeners()");
     return m_listeners;
   }
 
