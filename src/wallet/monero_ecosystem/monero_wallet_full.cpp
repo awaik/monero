@@ -1264,6 +1264,7 @@ namespace monero {
   monero_wallet_full::monero_wallet_full(std::shared_ptr<tools::wallet2> relativeWallet)
   {
     m_w2 = relativeWallet;
+    init_common();
   }
 
   monero_wallet_full::~monero_wallet_full() {
