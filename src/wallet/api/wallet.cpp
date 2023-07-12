@@ -3050,29 +3050,12 @@ std::string WalletImpl::get_cache_data_buf(const std::string& password) const
     return buf;
 }
 
-static void log_to_file(const std::string message)
-{
-   std::ofstream outfile;
-   outfile.open("/Users/dmytro/Documents/LOG/Log1.txt", std::ios_base::app); // append instead of overwrite
-   outfile << message << endl;
-}
-
 std::string WalletImpl::get_txs(const std::string& tx_query_json) const
 {
-    
-/// ˜*`*˜*()
-log_to_file("1");
-
     shared_ptr<monero_tx_query> tx_query = monero_tx_query::deserialize_from_block(tx_query_json);
-
-/// ˜*`*˜*()
-log_to_file("2");
-
+    
     vector<string> missing_tx_hashes;
     vector<shared_ptr<monero_tx_wallet>> txs = m_monero_wallet_full->get_txs(*tx_query, missing_tx_hashes);
-
-/// ˜*`*˜*()
-log_to_file("3");
 
     // return unique blocks to preserve model relationships as tree
     shared_ptr<monero_block> unconfirmed_block = nullptr; // placeholder to store unconfirmed txs in return json
@@ -3179,7 +3162,6 @@ std::string WalletImpl::describe_tx_set(const std::string& tx_set_json) const
 {
     monero_tx_set tx_set = monero_tx_set::deserialize(tx_set_json);
     monero_tx_set described_tx_set = m_monero_wallet_full->describe_tx_set(tx_set);
-
     return described_tx_set.serialize();
 }
 
