@@ -260,6 +260,7 @@ namespace monero {
 
     //boost::property_tree::ptree to_property_tree() const;
     rapidjson::Value to_rapidjson_val(rapidjson::Document::AllocatorType& allocator) const;
+    static void deserialize(const std::string& output_query_json, const std::shared_ptr<monero_output_query>& output_query);
     static void from_property_tree(const boost::property_tree::ptree& node, const std::shared_ptr<monero_output_query>& output_query);
     static std::shared_ptr<monero_output_query> deserialize_from_block(const std::string& output_query_json);
     std::shared_ptr<monero_output_query> copy(const std::shared_ptr<monero_output>& src, const std::shared_ptr<monero_output>& tgt) const;

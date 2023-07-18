@@ -3093,10 +3093,10 @@ std::string WalletImpl::get_txs(const std::string& tx_query_json) const
 
     return blocks_json;
 }
-
 std::string WalletImpl::get_outputs(const std::string& output_query_json) const
 {
-    shared_ptr<monero_output_query> output_query = monero_output_query::deserialize_from_block(output_query_json);
+    shared_ptr<monero_output_query> output_query = std::make_shared<monero_output_query>();
+    monero_output_query::deserialize(output_query_json, output_query);
     MTRACE("Fetching outputs with request: " << output_query->serialize());
 
     // get outputs

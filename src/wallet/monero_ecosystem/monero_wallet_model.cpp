@@ -1109,13 +1109,21 @@ namespace monero {
   }
 
   void monero_output_wallet::from_property_tree(const boost::property_tree::ptree& node, const std::shared_ptr<monero_output_wallet>& output_wallet) {
+
     monero_output::from_property_tree(node, output_wallet);
-    for (boost::property_tree::ptree::const_iterator it = node.begin(); it != node.end(); ++it) {
+
+    for (boost::property_tree::ptree::const_iterator it = node.begin(); it != node.end(); ++it)
+    {
       std::string key = it->first;
-      if (key == std::string("accountIndex")) output_wallet->m_account_index = it->second.get_value<uint32_t>();
-      else if (key == std::string("subaddressIndex")) output_wallet->m_subaddress_index = it->second.get_value<uint32_t>();
-      else if (key == std::string("isSpent")) output_wallet->m_is_spent = it->second.get_value<bool>();
-      else if (key == std::string("isFrozen")) output_wallet->m_is_frozen = it->second.get_value<bool>();
+
+      if (key == std::string("accountIndex"))
+        output_wallet->m_account_index = it->second.get_value<uint32_t>();
+      else if (key == std::string("subaddressIndex"))
+        output_wallet->m_subaddress_index = it->second.get_value<uint32_t>();
+      else if (key == std::string("isSpent"))
+        output_wallet->m_is_spent = it->second.get_value<bool>();
+      else if (key == std::string("isFrozen"))
+        output_wallet->m_is_frozen = it->second.get_value<bool>();
     }
   }
 
@@ -1177,7 +1185,17 @@ namespace monero {
     return root;
   }
 
+  void monero_output_query::deserialize(const std::string& output_query_json, const std::shared_ptr<monero_output_query>& output_query) {
+    
+    std::istringstream iss = output_query_json.empty() ? std::istringstream() : std::istringstream(output_query_json);
+    boost::property_tree::ptree node;
+    boost::property_tree::read_json(iss, node);
+
+    from_property_tree(node, output_query);
+  }
+
   void monero_output_query::from_property_tree(const boost::property_tree::ptree& node, const std::shared_ptr<monero_output_query>& output_query) {
+    
     monero_output_wallet::from_property_tree(node, output_query);
 
     // initialize query from node
@@ -1186,7 +1204,10 @@ namespace monero {
       if (key == std::string("subaddressIndices")) for (boost::property_tree::ptree::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) output_query->m_subaddress_indices.push_back(it2->second.get_value<uint32_t>());
       else if (key == std::string("minAmount")) output_query->m_min_amount = it->second.get_value<uint64_t>();
       else if (key == std::string("maxAmount")) output_query->m_max_amount = it->second.get_value<uint64_t>();
-      else if (key == std::string("txQuery")) {} // ignored
+      else if (key == std::string("txQuery")) {
+        output_query->m_tx_query = std::make_shared<monero_tx_query>();
+        monero_tx_query::from_property_tree(it->second, output_query->m_tx_query.get());
+      }
     }
   }
 
@@ -1201,7 +1222,8 @@ namespace monero {
     std::shared_ptr<monero_block> block = node_to_block_query(blockNode);
 
     // empty query if no txs
-    if (block->m_txs.empty()) return std::make_shared<monero_output_query>();
+    if (block->m_txs.empty())
+      return std::make_shared<monero_output_query>();
 
     // get tx query
     std::shared_ptr<monero_tx_query> tx_query = std::static_pointer_cast<monero_tx_query>(block->m_txs[0]);
