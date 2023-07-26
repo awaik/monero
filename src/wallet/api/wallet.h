@@ -252,6 +252,9 @@ public:
     virtual std::string sweep_unlocked(const std::string& config_json) const override;
     virtual std::string describe_tx_set(const std::string& tx_set_json) const override;
 
+    virtual std::string create_txs(const std::string& tx_config_json) const override;
+    virtual std::string relay_tx(const std::string& tx_metadata) const override;
+
 private:
     void clearStatus() const;
     void setStatusError(const std::string& message) const;

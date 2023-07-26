@@ -3097,6 +3097,7 @@ std::string WalletImpl::get_outputs(const std::string& output_query_json) const
 {
     shared_ptr<monero_output_query> output_query = std::make_shared<monero_output_query>();
     monero_output_query::deserialize(output_query_json, output_query);
+    
     MTRACE("Fetching outputs with request: " << output_query->serialize());
 
     // get outputs
@@ -3163,6 +3164,22 @@ std::string WalletImpl::describe_tx_set(const std::string& tx_set_json) const
     monero_tx_set tx_set = monero_tx_set::deserialize(tx_set_json);
     monero_tx_set described_tx_set = m_monero_wallet_full->describe_tx_set(tx_set);
     return described_tx_set.serialize();
+}
+
+std::string WalletImpl::create_txs(const std::string& tx_config_json) const
+{
+    shared_ptr<monero_tx_config> tx_config = monero_tx_config::deserialize(tx_config_json);
+    vector<shared_ptr<monero_tx_wallet>> txs = m_monero_wallet_full->create_txs(*tx_config);
+    return txs[0]->m_tx_set.get()->serialize();
+}
+
+std::string WalletImpl::relay_tx(const std::string& tx_metadata) const
+{
+    vector<string> tx_metadatas;
+    tx_metadatas.push_back(tx_metadata);
+
+    vector<string> tx_hashes = m_monero_wallet_full->relay_txs(tx_metadatas);
+    return tx_hashes[0];
 }
 
 } // namespace

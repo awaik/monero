@@ -1125,6 +1125,9 @@ struct Wallet
     virtual std::string get_outputs(const std::string& output_query_json) const = 0;
     virtual std::string sweep_unlocked(const std::string& config_json) const = 0;
     virtual std::string describe_tx_set(const std::string& tx_set_json) const = 0;
+
+    virtual std::string create_txs(const std::string& tx_config_json) const = 0;
+    virtual std::string relay_tx(const std::string& tx_metadata) const = 0;
 };
 
 /**
