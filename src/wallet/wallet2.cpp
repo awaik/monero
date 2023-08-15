@@ -5846,10 +5846,6 @@ void wallet2::store_to(const std::string &path, const epee::wipeable_string &pas
     // check if we want to store to directory which doesn't exists yet
     boost::filesystem::path parent_path = boost::filesystem::path(path).parent_path();
 
-    /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
-    log_to_file("parent_path=" + parent_path);
-    /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
-
     // if path is not exists, try to create it
     if (!parent_path.empty() &&  !boost::filesystem::exists(parent_path))
     {
