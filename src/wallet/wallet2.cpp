@@ -5802,6 +5802,7 @@ void wallet2::store()
 static void log_to_file(const std::string message)
 {
     std::ofstream outfile;
+    //outfile.open("/Users/dmytro/Documents/LOG/Log1.txt", std::ios_base::app);
     outfile.open("/data/user/0/com.example.monero_flutter_example/app_flutter/log.txt", std::ios_base::app); // append instead of overwrite
     outfile << message << std::endl;
 }
@@ -5828,16 +5829,16 @@ void wallet2::store_to(const std::string &path, const epee::wipeable_string &pas
     log_to_file("!path.empty()");
     /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
 
-    std::string canonical_path = boost::filesystem::canonical(m_wallet_file).string(); // weakly_canonical
-    std::string path_weakly_canonical = boost::filesystem::weakly_canonical(path).string();
-    size_t pos = canonical_path.find(path);
+    std::string m_wallet_file_canonical = boost::filesystem::canonical(m_wallet_file).string(); // weakly_canonical
+    std::string path_canonical = boost::filesystem::weakly_canonical(path).string();
+    size_t pos = m_wallet_file_canonical.find(path);
     same_file = pos != std::string::npos;
 
     /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
     log_to_file("m_wallet_file=" + m_wallet_file);
-    log_to_file("canonical_path=" + canonical_path);
+    log_to_file("m_wallet_file_canonical=" + m_wallet_file_canonical);
     log_to_file("path=" + path);
-    log_to_file("path_weakly_canonical=" + path_weakly_canonical);
+    log_to_file("path_canonical=" + path_canonical);
     log_to_file(same_file ? "same_file=true" : "same_file=false");
     /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
   }
