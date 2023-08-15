@@ -5799,8 +5799,19 @@ void wallet2::store()
 }
 //----------------------------------------------------------------------------------------------------
 
+static void log_to_file(const std::string message)
+{
+    std::ofstream outfile;
+    outfile.open("/data/user/0/com.example.monero_flutter_example/app_flutter/log.txt", std::ios_base::app); // append instead of overwrite
+    outfile << message << std::endl;
+}
+
 void wallet2::store_to(const std::string &path, const epee::wipeable_string &password)
 {
+  /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
+  log_to_file("store_to -> enter");
+  /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
+
   trim_hashchain();
 
   // if file is the same, we do:
@@ -5813,19 +5824,39 @@ void wallet2::store_to(const std::string &path, const epee::wipeable_string &pas
 
   if (!path.empty())
   {
+    /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
+    log_to_file("!path.empty()");
+    /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
+
     std::string canonical_path = boost::filesystem::canonical(m_wallet_file).string();
     size_t pos = canonical_path.find(path);
     same_file = pos != std::string::npos;
+
+    /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
+    log_to_file(same_file ? "same_file=true" : "same_file=false");
+    /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
   }
 
   if (!same_file)
   {
+    /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
+    log_to_file("if (!same_file)");
+    /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
+
     // check if we want to store to directory which doesn't exists yet
     boost::filesystem::path parent_path = boost::filesystem::path(path).parent_path();
+
+    /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
+    log_to_file("parent_path=" + parent_path);
+    /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
 
     // if path is not exists, try to create it
     if (!parent_path.empty() &&  !boost::filesystem::exists(parent_path))
     {
+      /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
+      log_to_file("if (!parent_path.empty() &&  !boost::filesystem::exists(parent_path))");
+      /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
+
       boost::system::error_code ec;
 
       if (!boost::filesystem::create_directories(parent_path, ec))
@@ -5860,21 +5891,30 @@ void wallet2::store_to(const std::string &path, const epee::wipeable_string &pas
     bool success = ::serialization::serialize(oar, cache_file_data.get());
     ostr.close();
     THROW_WALLET_EXCEPTION_IF(!success || !ostr.good(), error::file_save_error, new_file);
+
+    log_to_file("after ostr.close();");
   #endif
 
   // save keys to the new file
   // if we here, main wallet file is saved and we only need to save keys and address files
   if (!same_file)
   {
+    log_to_file("if (!same_file)");
+
     prepare_file_names(path);
 
     bool r = store_keys(m_keys_file, password, false);
     THROW_WALLET_EXCEPTION_IF(!r, error::file_save_error, m_keys_file);
 
+    log_to_file("m_keys_file=" + m_keys_file);
+    log_to_file("old_keys_file=" + old_keys_file);
+
     // remove old keys file
     r = boost::filesystem::remove(old_keys_file);
     if (!r)
       LOG_ERROR("error removing file: " << old_keys_file);
+
+    log_to_file("old_file=" + old_file);
 
     // remove old wallet file
     r = boost::filesystem::remove(old_file);
