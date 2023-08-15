@@ -5828,7 +5828,7 @@ void wallet2::store_to(const std::string &path, const epee::wipeable_string &pas
     log_to_file("!path.empty()");
     /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
 
-    std::string canonical_path = boost::filesystem::canonical(m_wallet_file).string();
+    std::string canonical_path = boost::filesystem::canonical(m_wallet_file).string(); // weakly_canonical
     size_t pos = canonical_path.find(path);
     same_file = pos != std::string::npos;
 
@@ -5942,8 +5942,10 @@ void wallet2::store_to(const std::string &path, const epee::wipeable_string &pas
   else
   {
     // here we have "*.new" file, we need to rename it to be without ".new"
-    //std::error_code e = tools::replace_file(new_file, m_wallet_file);
-    //THROW_WALLET_EXCEPTION_IF(e, error::file_save_error, m_wallet_file, e);
+    log_to_file("before replace_file " + new_file + "->" + m_wallet_file);
+    std::error_code e = tools::replace_file(new_file, m_wallet_file);
+    THROW_WALLET_EXCEPTION_IF(e, error::file_save_error, m_wallet_file, e);
+    log_to_file("after replace_file");
   }
 
   // mms
