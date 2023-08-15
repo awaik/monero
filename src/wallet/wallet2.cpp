@@ -5834,6 +5834,7 @@ void wallet2::store_to(const std::string &path, const epee::wipeable_string &pas
 
     /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
     log_to_file("m_wallet_file=" + m_wallet_file);
+    log_to_file("canonical_path=" + canonical_path);
     log_to_file("path=" + path);
     log_to_file(same_file ? "same_file=true" : "same_file=false");
     /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
