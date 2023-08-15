@@ -5829,6 +5829,7 @@ void wallet2::store_to(const std::string &path, const epee::wipeable_string &pas
     /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
 
     std::string canonical_path = boost::filesystem::canonical(m_wallet_file).string(); // weakly_canonical
+    std::string path_weakly_canonical = boost::filesystem::weakly_canonical(path).string();
     size_t pos = canonical_path.find(path);
     same_file = pos != std::string::npos;
 
@@ -5836,6 +5837,7 @@ void wallet2::store_to(const std::string &path, const epee::wipeable_string &pas
     log_to_file("m_wallet_file=" + m_wallet_file);
     log_to_file("canonical_path=" + canonical_path);
     log_to_file("path=" + path);
+    log_to_file("path_weakly_canonical=" + path_weakly_canonical);
     log_to_file(same_file ? "same_file=true" : "same_file=false");
     /////////////********<<<<<<<<<<<<<<<<<˜!˜!˜!˜!˜!
   }
