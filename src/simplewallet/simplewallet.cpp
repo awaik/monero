@@ -76,6 +76,7 @@
 #include <stdexcept>
 #include "wallet/message_store.h"
 #include "QrCode.hpp"
+#include "wallet/api/wallet2_api.h"
 
 #ifdef WIN32
 #include <boost/locale.hpp>
@@ -531,6 +532,129 @@ namespace
       fail_msg_writer() << sw::tr("invalid format for subaddress lookahead; must be <major>:<minor>");
     return r;
   }
+}
+
+char* readFile(const char* filename, std::size_t& length) {
+    std::ifstream file(filename, std::ios::binary | std::ios::ate);
+    if (!file) {
+        std::cerr << "Не удалось открыть файл!" << std::endl;
+        return nullptr;
+    }
+
+    length = static_cast<std::size_t>(file.tellg());  // определение размера файла
+    file.seekg(0, std::ios::beg);  // переход к началу файла
+
+    char* buffer = new char[length];
+    if (file.read(buffer, length)) {
+        return buffer;
+    } else {
+        delete[] buffer;
+        std::cerr << "Ошибка при чтении файла!" << std::endl;
+        return nullptr;
+    }
+}
+
+struct MoneroWalletListener : Monero::WalletListener
+{
+    uint64_t m_height;
+    bool m_need_to_refresh;
+    bool m_new_transaction;
+
+    MoneroWalletListener()
+    {
+        m_height = 0;
+        m_need_to_refresh = false;
+        m_new_transaction = false;
+    }
+
+    void moneySpent(const std::string& txId, uint64_t amount) override
+    {
+        m_new_transaction = true;
+    }
+
+    void moneyReceived(const std::string& txId, uint64_t amount) override
+    {
+        m_new_transaction = true;
+    }
+
+    void unconfirmedMoneyReceived(const std::string& txId, uint64_t amount) override
+    {
+        m_new_transaction = true;
+    }
+
+    void newBlock(uint64_t height) override
+    {
+        m_height = height;
+    }
+
+    void updated() override
+    {
+        m_new_transaction = true;
+    }
+
+    void refreshed() override
+    {
+        m_need_to_refresh = true;
+    }
+
+    uint64_t height()
+    {
+        return m_height;
+    }
+};
+
+int main(int argc, char* argv[]) {
+    std::cout << "test" << std::endl;
+
+    std::size_t keysDataLen;
+    char *keysData = readFile("/Users/dmytro/Documents/wallets/from_api.keys", keysDataLen);
+
+    std::string keys_data_buf = std::string(reinterpret_cast<const char *>(keysData), keysDataLen);
+
+    Monero::Wallet *wallet;
+
+    try {
+
+        wallet = Monero::WalletManagerFactory::getWalletManager()->open_wallet_data("", false, keys_data_buf, "",
+                                                                                    "node.moneroworld.com:18089",
+                                                                                    "Daemon username",
+                                                                                    "Daemon password");
+
+        wallet->store("/Users/dmytro/Documents/wallets/cpp/testcpp");
+
+    }
+    catch (std::exception &e) {
+        std::cout << e.what() << std::endl;
+    }
+    catch (...) {
+        std::cout << "error" << std::endl;
+    }
+
+    auto addr1 = wallet->address(0, 0);
+    std::cout << addr1 << std::endl;
+
+    wallet->init("node.moneroworld.com:18089", 0, "Daemon username", "Daemon password", true, false);
+
+    MoneroWalletListener* listener = new MoneroWalletListener();
+    wallet->setListener(listener);
+    wallet->setRefreshFromBlockHeight(2870000);
+    wallet->startRefresh();
+
+    while (true) {
+        std::string input;
+        std::getline(std::cin, input);
+
+        uint64_t h1 = listener->height();
+        uint64_t h2 = wallet->blockChainHeight();
+
+        if (input == "s") {
+            wallet->store("");
+        }
+
+        std::cout << "listener->height " << h1 << std::endl;
+        std::cout << "wallet->blockChainHeight " << h2 << std::endl;
+        std::cout << " === " << std::endl;
+    }
 }
 
 void simple_wallet::handle_transfer_exception(const std::exception_ptr &e, bool trusted_daemon)
@@ -10623,7 +10747,7 @@ void simple_wallet::commit_or_save(std::vector<tools::wallet2::pending_tx>& ptx_
   }
 }
 //----------------------------------------------------------------------------------------------------
-int main(int argc, char* argv[])
+int main2(int argc, char* argv[])
 {
   TRY_ENTRY();
 
@@ -10633,6 +10757,32 @@ int main(int argc, char* argv[])
   boost::filesystem::path::imbue(std::locale());
 #endif
   setlocale(LC_CTYPE, "");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   po::options_description desc_params(wallet_args::tr("Wallet options"));
   tools::wallet2::init_options(desc_params);
