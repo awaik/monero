@@ -255,6 +255,9 @@ public:
     virtual std::string create_txs(const std::string& tx_config_json) const override;
     virtual std::string relay_tx(const std::string& tx_metadata) const override;
 
+    virtual std::vector<std::string> get_public_nodes(bool white_only) const override;
+    virtual uint64_t get_single_block_tx_count(const std::string address, uint64_t blockHeight) const override;
+
 private:
     void clearStatus() const;
     void setStatusError(const std::string& message) const;

@@ -77,6 +77,8 @@
 #include "wallet/message_store.h"
 #include "QrCode.hpp"
 #include "wallet/api/wallet2_api.h"
+#include <ctime>
+#include <chrono>
 
 #ifdef WIN32
 #include <boost/locale.hpp>
@@ -534,23 +536,22 @@ namespace
   }
 }
 
-char* readFile(const char* filename, std::size_t& length) {
+std::string readFile(const char* filename) {
     std::ifstream file(filename, std::ios::binary | std::ios::ate);
     if (!file) {
-        std::cerr << "Не удалось открыть файл!" << std::endl;
-        return nullptr;
+        std::cerr << "Error opening file!" << std::endl;
+        return "";
     }
 
-    length = static_cast<std::size_t>(file.tellg());  // определение размера файла
-    file.seekg(0, std::ios::beg);  // переход к началу файла
+    std::size_t length = static_cast<std::size_t>(file.tellg());
+    file.seekg(0, std::ios::beg);
 
-    char* buffer = new char[length];
-    if (file.read(buffer, length)) {
+    std::string buffer(length, ' ');
+    if (file.read(&buffer[0], length)) {
         return buffer;
     } else {
-        delete[] buffer;
-        std::cerr << "Ошибка при чтении файла!" << std::endl;
-        return nullptr;
+        std::cerr << "Error reading file!" << std::endl;
+        return "";
     }
 }
 
@@ -603,58 +604,140 @@ struct MoneroWalletListener : Monero::WalletListener
     }
 };
 
+inline static std::string getTime() {
+    std::time_t t = std::time(nullptr);
+    std::tm* time_ptr = std::localtime(&t);
+
+    std::ostringstream oss;
+    oss << std::put_time(time_ptr, "%Y-%m-%d %H:%M:%S");
+
+    return "[" + oss.str() + "]";
+}
+
+static void log_to_file(const std::string message)
+{
+    std::ofstream outfile;
+    outfile.open("TestReport.txt", std::ios_base::app);
+    outfile << message << std::endl;
+}
+
 int main(int argc, char* argv[]) {
-    std::cout << "test" << std::endl;
 
-    std::size_t keysDataLen;
-    char *keysData = readFile("/Users/dmytro/Documents/wallets/from_api.keys", keysDataLen);
+    std::string p2pServer = "node.moneroworld.com:18089";
 
-    std::string keys_data_buf = std::string(reinterpret_cast<const char *>(keysData), keysDataLen);
+    if (argc > 1) {
+        p2pServer = argv[1];
+    }
+
+    std::cout << "**** STARTED " << getTime() << " (monero-project v0.18.3.1 test v1) ***" << std::endl;
+
+//    std::size_t keysDataLen;
+//    char *keysData = readFile("/Users/dmytro/Documents/wallets/from_api.keys", keysDataLen);
+
+    //std::string keys_data_buf = std::string(reinterpret_cast<const char *>(keysData), keysDataLen);
 
     Monero::Wallet *wallet;
 
     try {
 
-        wallet = Monero::WalletManagerFactory::getWalletManager()->open_wallet_data("", false, keys_data_buf, "",
-                                                                                    "node.moneroworld.com:18089",
-                                                                                    "Daemon username",
-                                                                                    "Daemon password");
+        wallet = Monero::WalletManagerFactory::getWalletManager()->openWallet("wallet_tt0", "");
 
-        wallet->store("/Users/dmytro/Documents/wallets/cpp/testcpp");
+//        wallet = Monero::WalletManagerFactory::getWalletManager()->open_wallet_data("", false, keys_data_buf, "",
+//                                                                                    "node.moneroworld.com:18089",
+//                                                                                    "Daemon username",
+//                                                                                    "Daemon password");
+
+        //wallet->store("/Users/dmytro/Documents/wallets/cpp/testcpp");
 
     }
     catch (std::exception &e) {
         std::cout << e.what() << std::endl;
+        return 1;
     }
     catch (...) {
-        std::cout << "error" << std::endl;
+        std::cout << "unknown error" << std::endl;
+        return 2;
     }
 
     auto addr1 = wallet->address(0, 0);
-    std::cout << addr1 << std::endl;
+    std::cout << "wallet loaded, address: " << addr1 << std::endl;
 
-    wallet->init("node.moneroworld.com:18089", 0, "Daemon username", "Daemon password", true, false);
-
+//    std::cout << getTime() << " Init started" << std::endl;
+//    //wallet->init("node.moneroworld.com:18089", 0, "Daemon username", "Daemon password", true, false);
+//    wallet->init(p2pServer, 0, "", "", true, false);
+//
     MoneroWalletListener* listener = new MoneroWalletListener();
-    wallet->setListener(listener);
-    wallet->setRefreshFromBlockHeight(2870000);
-    wallet->startRefresh();
+//    wallet->setListener(listener);
+//    wallet->setRefreshFromBlockHeight(2870000);
+//    wallet->startRefresh();
+//
+//    std::cout << getTime() << " Init completed" << std::endl;
+
+    int res = wallet->get_single_block_tx_count("65.21.140.233:18089", 2994603);
+    std::cout << res << std::endl;
+
+//    auto nodes = wallet->get_public_nodes(false);
+//
+//    for (auto node : nodes)
+//    {
+//        std::cout << node << std::endl;
+//    }
+
+    return 0;
+
+    // ------------------
+
+    std::cout << getTime() << " Sync started" << std::endl;
+
+    auto startSyncClock = std::chrono::high_resolution_clock::now();
 
     while (true) {
-        std::string input;
-        std::getline(std::cin, input);
+        uint64_t syncHeight = listener->height();
+        uint64_t chainHeight = wallet->blockChainHeight();
 
-        uint64_t h1 = listener->height();
-        uint64_t h2 = wallet->blockChainHeight();
+        std::cout << "sync height=" << syncHeight << std::endl;
+        std::cout << "global height=" << chainHeight << std::endl;
+        std::cout << "-------------------" << std::endl;
 
-        if (input == "s") {
-            wallet->store("");
-        }
+        if (syncHeight + 1 == chainHeight && chainHeight >= 2993685)
+            break;
 
-        std::cout << "listener->height " << h1 << std::endl;
-        std::cout << "wallet->blockChainHeight " << h2 << std::endl;
-        std::cout << " === " << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(10));
     }
+
+    auto endSyncClock = std::chrono::high_resolution_clock::now();
+    auto syncDuration = std::chrono::duration_cast<std::chrono::milliseconds>(endSyncClock - startSyncClock);
+    auto syncDurationMs = syncDuration.count();
+
+    std::cout << getTime() << " Sync completed" << std::endl;
+
+    // ------------------
+
+    std::cout << getTime() << " Import Multisig Images started" << std::endl;
+
+    auto startImportClock = std::chrono::high_resolution_clock::now();
+
+    std::string hexImages = readFile("images-hex.txt");
+    std::vector<std::string> imgs = {hexImages};
+    wallet->importMultisigImages(imgs);
+
+    auto endImportClock = std::chrono::high_resolution_clock::now();
+    auto importDuration = std::chrono::duration_cast<std::chrono::milliseconds>(endImportClock - startImportClock);
+    auto importDurationMs = importDuration.count();
+
+    std::cout << getTime() << " Import Multisig Images completed" << std::endl;
+
+    // ----------------------
+
+    uint64_t ub = wallet->unlockedBalance();
+    std::cout << "unlockedBalance=" << ub << std::endl;
+
+    std::string test_report_line = getTime() + ";" + std::to_string(syncDurationMs) + ";" +  std::to_string(importDurationMs) + ";" + std::to_string(ub);
+    log_to_file(test_report_line);
+
+    Monero::WalletManagerFactory::getWalletManager()->closeWallet(wallet, true);
+
+    return 0;
 }
 
 void simple_wallet::handle_transfer_exception(const std::exception_ptr &e, bool trusted_daemon)

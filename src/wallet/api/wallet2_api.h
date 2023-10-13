@@ -1128,6 +1128,9 @@ struct Wallet
 
     virtual std::string create_txs(const std::string& tx_config_json) const = 0;
     virtual std::string relay_tx(const std::string& tx_metadata) const = 0;
+
+    virtual std::vector<std::string> get_public_nodes(bool white_only = true) const = 0;
+    virtual uint64_t get_single_block_tx_count(const std::string address, uint64_t blockHeight) const = 0;
 };
 
 /**
