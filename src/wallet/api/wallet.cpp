@@ -2972,9 +2972,7 @@ namespace Monero {
         target.resize(source.size());
 
         std::transform(source.begin(), source.end(), target.begin(), [](public_node src_item) {
-            return src_item.host + ":" + std::to_string(src_item.rpc_port) + "; last_seen=" +
-                   std::to_string(src_item.last_seen) + "; rpc_credits_per_hash=" +
-                   std::to_string(src_item.rpc_credits_per_hash);
+            return src_item.host + ":" + std::to_string(src_item.rpc_port);
         });
 
         return target;
