@@ -2971,16 +2971,16 @@ namespace Monero {
         std::vector<std::string> target;
         target.resize(source.size());
 
-        std::transform(source.begin(), source.end(), target.begin(), [](public_node src_item) {
+        std::transform(source.begin(), source.end(), target.begin(), [](const public_node& src_item) {
             return src_item.host + ":" + std::to_string(src_item.rpc_port);
         });
 
         return target;
     }
 
-    uint64_t WalletImpl::get_single_block_tx_count(const std::string address, uint64_t blockHeight) const
+    uint64_t Wallet::get_single_block_tx_count(const std::string& address, uint64_t blockHeight)
     {
-        return m_wallet->get_single_block_tx_count(address, blockHeight);
+        return tools::wallet2::get_single_block_tx_count(address, blockHeight);
     }
 
 } // namespace

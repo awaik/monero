@@ -43,6 +43,7 @@
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/preprocessor/stringize.hpp>
 #include <openssl/evp.h>
+#include <stdexcept>
 #include "include_base_utils.h"
 using namespace epee;
 
@@ -7294,10 +7295,10 @@ namespace tools {
         }
                 multipliers[] =
                 {
-                        {3, {1, 2, 3}},
+                        {3, {1, 2,  3}},
                         {3, {1, 20, 166}},
-                        {4, {1, 4, 20, 166}},
-                        {4, {1, 5, 25, 1000}},
+                        {4, {1, 4,  20, 166}},
+                        {4, {1, 5,  25, 1000}},
                 };
 
         if (fee_algorithm == -1)
@@ -14545,8 +14546,9 @@ namespace tools {
     }
 
     //----------------------------------------------------------------------------------------------------
-    uint64_t wallet2::get_single_block_tx_count(const std::string address, uint64_t blockHeight) {
-        std::unique_ptr<epee::net_utils::http::http_client_factory> http_client_factory = std::unique_ptr<epee::net_utils::http::http_client_factory>(new net::http::client_factory());
+    uint64_t wallet2::get_single_block_tx_count(const std::string &address, uint64_t blockHeight) {
+        std::unique_ptr<epee::net_utils::http::http_client_factory> http_client_factory = std::unique_ptr<epee::net_utils::http::http_client_factory>(
+                new net::http::client_factory());
         std::unique_ptr<epee::net_utils::http::abstract_http_client> http_client(http_client_factory->create());
 
         boost::optional<epee::net_utils::http::login> login{};
@@ -14556,21 +14558,20 @@ namespace tools {
                                              epee::net_utils::ssl_support_t::e_ssl_support_enabled :
                                              epee::net_utils::ssl_support_t::e_ssl_support_disabled;
 
-        http_client->set_server(address, login, std::move(ssl));
+        http_client->set_server(address, login, ssl);
         std::chrono::seconds timeout = std::chrono::minutes(3);
 
         COMMAND_RPC_GET_BLOCKS_BY_HEIGHT::request req;
         COMMAND_RPC_GET_BLOCKS_BY_HEIGHT::response res;
 
-        req.heights = { blockHeight };
-        req.client = get_client_signature();
+        req.heights = {blockHeight};
 
         bool r = net_utils::invoke_http_bin("/getblocks_by_height.bin", req, res, *http_client, timeout);
 
-        if (!r || res.status != CORE_RPC_STATUS_OK)
-            return -1;
+        if (res.status != CORE_RPC_STATUS_OK)
+            throw std::runtime_error(res.status);
 
-        if (1 != res.blocks.size())
+        if (!r || 1 != res.blocks.size())
             return -1;
 
         return res.blocks[0].txs.size();
