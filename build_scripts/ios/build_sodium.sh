@@ -12,5 +12,5 @@ git clone $SODIUM_URL $SODIUM_PATH --branch stable
 cd $SODIUM_PATH
 ./dist-build/apple-xcframework.sh
 
-mv ${SODIUM_PATH}/libsodium-apple/tmp/ios64/include/* $BUILD_INCLUDE_DIR
-mv ${SODIUM_PATH}/libsodium-apple/tmp/ios64/lib/* $BUILD_LIB_DIR
+mv ${SODIUM_PATH}/libsodium-apple/ios/include/* $BUILD_INCLUDE_DIR
+mv ${SODIUM_PATH}/libsodium-apple/ios/lib/* $BUILD_LIB_DIR
