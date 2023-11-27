@@ -16,6 +16,6 @@ jobs:
 
     - name: Build.
       run: |
-        brew install llvm
+        brew install libnghttp2
         cd build_scripts/macos
         ./build_all.sh
