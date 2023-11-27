@@ -18,15 +18,23 @@ curl -O https://www.nlnetlabs.nl/downloads/unbound/unbound-1.17.0.tar.gz
 tar -xvzf unbound-1.17.0.tar.gz
 cd unbound-1.17.0
 ./configure --with-ssl=/usr/local/opt/openssl --with-libexpat=/usr/local/opt/expat
-make
+make -j$HOST_NCORES
 sudo make install
 
 
-echo "***************"
-echo "*** monero-cpp ***"
-echo "***************"
+echo "**************"
+echo "*** monero ***"
+echo "**************"
 
 
 cd $SCRIPTS_DIR
 cd ../../external/monero-cpp/external/monero-project
 make release-static -j$HOST_NCORES
+
+echo "******************"
+echo "*** monero-cpp ***"
+echo "******************"
+
+cd $SCRIPTS_DIR
+./bin/build_libmonero_cpp.sh
+
