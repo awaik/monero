@@ -28,7 +28,7 @@ cd ~
 curl -O https://www.nlnetlabs.nl/downloads/unbound/unbound-1.17.0.tar.gz
 tar -xvzf unbound-1.17.0.tar.gz
 cd unbound-1.17.0
-./configure
+./configure --with-libexpat=~/expat-2.4.8
 make
 sudo make install
 
