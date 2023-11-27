@@ -16,5 +16,6 @@ jobs:
 
     - name: Build.
       run: |
+        brew install llvm
         cd build_scripts/macos
         ./build_all.sh
