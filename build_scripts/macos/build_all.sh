@@ -36,5 +36,6 @@ echo "*** monero-cpp ***"
 echo "******************"
 
 cd $SCRIPTS_DIR
-../../external/monero-cpp/bin/build_libmonero_cpp.sh
+cd ../../external/monero-cpp
+./bin/build_libmonero_cpp.sh
 
