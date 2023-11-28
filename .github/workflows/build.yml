@@ -7,6 +7,18 @@ on:
 
 jobs:
 
+#  build-macos:
+#    runs-on: macos-13
+#    steps:
+#    - uses: actions/checkout@v3
+#      with:
+#        submodules: recursive
+#
+#    - name: Build.
+#      run: |
+#        cd build_scripts/macos
+#        ./build_all.sh
+
   build-ios:
     runs-on: macos-13
     steps:
@@ -16,5 +28,5 @@ jobs:
 
     - name: Build.
       run: |
-        cd build_scripts/macos
+        cd build_scripts/ios
         ./build_all.sh
