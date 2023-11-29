@@ -2,17 +2,9 @@
 
 . ./config.sh
 
-mkdir -p $SOURCE_DIR
-mkdir -p $BUILD_LIB_DIR
-mkdir -p $BUILD_INCLUDE_DIR
+./prepare_system.sh
 
-mkdir -p $DIST_LIB_DIR
-mkdir -p $DIST_INCLUDE_DIR
-
-cd $SCRIPTS_DIR
-cd ../../external/monero-cpp/external/monero-project
-brew update && brew bundle --file=contrib/brew/Brewfile
-brew remove hidapi
+./make_dirs.sh
 
 cd $SCRIPTS_DIR
 

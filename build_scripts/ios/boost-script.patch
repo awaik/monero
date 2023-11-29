@@ -1,0 +1,163 @@
+--- boost.orig.sh	2023-11-29 09:47:01
++++ boost.sh	2023-11-29 09:24:56
+@@ -33,7 +33,7 @@
+ #
+ #===============================================================================
+ 
+-set -euo pipefail
++#set -euo pipefail
+ 
+ BOOST_VERSION=1.76.0
+ 
+@@ -731,6 +731,9 @@
+ 
+         doneSection
+     fi
++    
++    # fixes boost passing `-arch arm` to linker which fails due to attempt to use armv4t
++    sed -i '' -e "s/options = -arch arm ;/#options = -arch arm ;/" "$BOOST_SRC/tools/build/src/tools/darwin.jam"
+ }
+ 
+ #===============================================================================
+@@ -768,7 +771,7 @@
+ : <architecture>arm
+   <target-os>iphone
+   <cxxflags>"$CXX_FLAGS"
+-  <linkflags>"$LD_FLAGS -isysroot $IOS_SDK_PATH"
++  <linkflags>"$LD_FLAGS ${IOS_ARCH_FLAGS[*]} $EXTRA_IOS_FLAGS -isysroot $IOS_SDK_PATH"
+   <compileflags>"$OTHER_FLAGS ${IOS_ARCH_FLAGS[*]} $EXTRA_IOS_FLAGS -isysroot $IOS_SDK_PATH"
+   <threading>multi
+ 
+@@ -939,17 +942,19 @@
+         install >> "${IOS_OUTPUT_DIR}/ios-build.log" 2>&1 \
+         || { echo "Error installing iPhone. Check log."; exit 1; }
+     doneSection
++    
++    echo "================================()()()()()()()================================"
+ 
+-    echo Building Boost for iPhoneSimulator
+-    $B2 "$THREADS"  \
+-        --build-dir=iphonesim-build \
+-        --stagedir=iphonesim-build/stage \
+-        toolset="darwin-$COMPILER_VERSION~iphonesim" \
+-        link=static \
+-        variant=${BUILD_VARIANT} \
+-        stage >> "${IOS_OUTPUT_DIR}/ios-build.log" 2>&1 \
+-        || { echo "Error staging iPhoneSimulator. Check log."; exit 1; }
+-    doneSection
++#    echo Building Boost for iPhoneSimulator
++#    $B2 "$THREADS"  \
++#        --build-dir=iphonesim-build \
++#        --stagedir=iphonesim-build/stage \
++#        toolset="darwin-$COMPILER_VERSION~iphonesim" \
++#        link=static \
++#        variant=${BUILD_VARIANT} \
++#        stage >> "${IOS_OUTPUT_DIR}/ios-build.log" 2>&1 \
++#        || { echo "Error staging iPhoneSimulator. Check log."; exit 1; }
++#    doneSection
+ }
+ 
+ buildBoost_tvOS()
+@@ -1114,9 +1119,9 @@
+         done
+ 
+         # iOS Simulator
+-        for ARCH in "${IOS_SIM_ARCHS[@]}"; do
+-            mkdir -p "$IOS_BUILD_DIR/iphonesimulator/$ARCH/obj"
+-        done
++#        for ARCH in "${IOS_SIM_ARCHS[@]}"; do
++#            mkdir -p "$IOS_BUILD_DIR/iphonesimulator/$ARCH/obj"
++#        done
+     fi
+ 
+     if [[ -n $BUILD_TVOS ]]; then
+@@ -1173,15 +1178,15 @@
+                     "$IOS_BUILD_DIR/iphoneos/${IOS_ARCHS[0]}/libboost_$NAME.a"
+             fi
+ 
+-            if [[ "${#IOS_SIM_ARCHS[@]}" -gt 1 ]]; then
+-                for ARCH in "${IOS_SIM_ARCHS[@]}"; do
+-                    $IOS_SIM_DEV_CMD lipo "iphonesim-build/stage/lib/libboost_$NAME.a" \
+-                        -thin "$ARCH" -o "$IOS_BUILD_DIR/iphonesimulator/$ARCH/libboost_$NAME.a"
+-                done
+-            else
+-                cp "iphonesim-build/stage/lib/libboost_$NAME.a" \
+-                    "$IOS_BUILD_DIR/iphonesimulator/${IOS_SIM_ARCHS[0]}/libboost_$NAME.a"
+-            fi
++#            if [[ "${#IOS_SIM_ARCHS[@]}" -gt 1 ]]; then
++#                for ARCH in "${IOS_SIM_ARCHS[@]}"; do
++#                    $IOS_SIM_DEV_CMD lipo "iphonesim-build/stage/lib/libboost_$NAME.a" \
++#                        -thin "$ARCH" -o "$IOS_BUILD_DIR/iphonesimulator/$ARCH/libboost_$NAME.a"
++#                done
++#            else
++#                cp "iphonesim-build/stage/lib/libboost_$NAME.a" \
++#                    "$IOS_BUILD_DIR/iphonesimulator/${IOS_SIM_ARCHS[0]}/libboost_$NAME.a"
++#            fi
+         fi
+ 
+         # Some libs cannot be built for tvOS: we ignore the missing .a files.
+@@ -1260,9 +1265,9 @@
+             for ARCH in "${IOS_ARCHS[@]}"; do
+                 unpackArchive "$IOS_BUILD_DIR/iphoneos/$ARCH/obj" $NAME
+             done
+-            for ARCH in "${IOS_SIM_ARCHS[@]}"; do
+-                unpackArchive "$IOS_BUILD_DIR/iphonesimulator/$ARCH/obj" $NAME
+-            done
++#            for ARCH in "${IOS_SIM_ARCHS[@]}"; do
++#                unpackArchive "$IOS_BUILD_DIR/iphonesimulator/$ARCH/obj" $NAME
++#            done
+         fi
+ 
+         if [[ -n $BUILD_TVOS ]]; then
+@@ -1303,10 +1308,10 @@
+             rm -f "$IOS_BUILD_DIR/iphoneos/$ARCH/libboost.a"
+         done
+         rm -f "$IOS_BUILD_DIR/iphoneos/libboost.a"
+-        for ARCH in "${IOS_SIM_ARCHS[@]}"; do
+-            rm -f "$IOS_BUILD_DIR/iphonesimulator/$ARCH/libboost.a"
+-        done
+-        rm -f "$IOS_BUILD_DIR/iphonesimulator/libboost.a"
++#        for ARCH in "${IOS_SIM_ARCHS[@]}"; do
++#            rm -f "$IOS_BUILD_DIR/iphonesimulator/$ARCH/libboost.a"
++#        done
++#        rm -f "$IOS_BUILD_DIR/iphonesimulator/libboost.a"
+     fi
+     if [[ -n $BUILD_TVOS ]]; then
+         for ARCH in "${TVOS_ARCHS[@]}"; do
+@@ -1347,10 +1352,10 @@
+                 (cd_or_abort "$IOS_BUILD_DIR/iphoneos/$ARCH"; $IOS_DEV_CMD ar crus libboost.a "obj/$NAME/"*.o; )
+             done
+ 
+-            for ARCH in "${IOS_SIM_ARCHS[@]}"; do
+-                echo "...ios-sim-$ARCH"
+-                (cd_or_abort "$IOS_BUILD_DIR/iphonesimulator/$ARCH"; $IOS_SIM_DEV_CMD ar crus libboost.a "obj/$NAME/"*.o; )
+-            done
++#            for ARCH in "${IOS_SIM_ARCHS[@]}"; do
++#                echo "...ios-sim-$ARCH"
++#                (cd_or_abort "$IOS_BUILD_DIR/iphonesimulator/$ARCH"; $IOS_SIM_DEV_CMD ar crus libboost.a "obj/$NAME/"*.o; )
++#            done
+         fi
+ 
+         if [[ -n $BUILD_TVOS ]]; then
+@@ -1812,10 +1817,10 @@
+ patchBoost
+ updateBoostUserConfigJam
+ 
+-if [[ -z $NO_THINNING ]]; then
+-    bootstrapBoost "bcp" # Necessary to have the b2 binary for building bcp
+-    thinBoost
+-fi
++#if [[ -z $NO_THINNING ]]; then
++#    bootstrapBoost "bcp" # Necessary to have the b2 binary for building bcp
++#    thinBoost
++#fi
+ 
+ if [[ -n $BUILD_IOS ]]; then
+     bootstrapBoost "iOS"
+@@ -1849,4 +1854,4 @@
+     buildXCFramework "$DIST_DIR"
+ fi
+ 
+-echo "Completed successfully"
+\ No newline at end of file
++echo "Completed successfully"
