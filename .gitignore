@@ -1,0 +1,12 @@
+.DS_Store
+/doc
+/build
+/tags
+log/
+build_scripts/android/build
+build_scripts/android/dist
+build_scripts/ios/build
+build_scripts/ios/dist
+build_scripts/macos/build
+build_scripts/macos/dist
+build_scripts/macos/unbound-1.17.0
