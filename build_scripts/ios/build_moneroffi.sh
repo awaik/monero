@@ -2,15 +2,15 @@
 
 . ./config.sh
 
-MONERO_DIR_PATH="${SOURCE_DIR}/monero"
+MONEROFFI_DIR_PATH="${SOURCE_DIR}/moneroffi"
 BUILD_TYPE=release
-DEST_LIB_DIR=${BUILD_LIB_DIR}/monero
-DEST_INCLUDE_DIR=${BUILD_INCLUDE_DIR}/monero
+DEST_LIB_DIR=${BUILD_LIB_DIR}/moneroffi
+DEST_INCLUDE_DIR=${BUILD_INCLUDE_DIR}/moneroffi
 
-echo "Copy monero to $MONERO_DIR_PATH"
-mkdir -p $MONERO_DIR_PATH
-cd $MONERO_DIR_PATH
-rsync -aP --exclude=build_scripts $SCRIPTS_DIR/../../external/monero-cpp/external/monero-project/ ${MONERO_DIR_PATH}/
+echo "Copy monero to $MONEROFFI_DIR_PATH"
+mkdir -p $MONEROFFI_DIR_PATH
+cd $MONEROFFI_DIR_PATH
+rsync -aP --exclude=build_scripts $SCRIPTS_DIR/../../ ${MONEROFFI_DIR_PATH}/
 mkdir -p build
 cd ..
 
@@ -31,20 +31,19 @@ case $arch in
 		DEST_LIB=../../lib-armv8-a;;
 esac
 
-rm -r monero/build > /dev/null
+rm -r $MONEROFFI_DIR_PATH/build > /dev/null
 
-mkdir -p monero/build/${BUILD_TYPE}
-pushd monero/build/${BUILD_TYPE}
+mkdir -p $MONEROFFI_DIR_PATH/build/${BUILD_TYPE}
+pushd $MONEROFFI_DIR_PATH/build/${BUILD_TYPE}
+
 cmake -D IOS=ON \
 	-DARCH=${arch} \
 	-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
 	-DSTATIC=ON \
-	-DBUILD_GUI_DEPS=ON \
-	-DUNBOUND_INCLUDE_DIR=${BUILD_INCLUDE_DIR} \
 	-DCMAKE_INSTALL_PREFIX=${BUILD_DIR}  \
-    -DUSE_DEVICE_TREZOR=OFF \
 	../..
-#make wallet_api -j4
+
+make -j4
 #find . -path ./lib -prune -o -name '*.a' -exec cp '{}' lib \;
 #cp -R ./lib/* $DEST_LIB_DIR
 #cp ../../src/wallet/api/wallet2_api.h  $DEST_INCLUDE_DIR

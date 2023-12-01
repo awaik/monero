@@ -13,5 +13,6 @@ mkdir -p $DIST_DIR
 ./build_unbound.sh
 ./build_zmq.sh
 ./build_monero.sh
+./build_moneroffi.sh
 
 ./copy_monero_deps.sh
