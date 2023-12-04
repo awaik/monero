@@ -1,6 +1,7 @@
+#pragma once
+
 #include <stdint.h>
 #include <stdbool.h>
-#include <string>
 
 #ifdef __cplusplus
 extern "C"
@@ -9,7 +10,7 @@ extern "C"
 
 typedef struct ErrorBox
 {
-    int code;
+    int code = -1;
     const char* message;
 } ErrorBox;
 
@@ -66,7 +67,7 @@ uint64_t get_node_height_or_update(uint64_t base_eight);
 
 const char* const* get_public_nodes();
 
-uint64_t get_single_block_tx_count(const std::string& address, uint64_t block_height);
+uint64_t get_single_block_tx_count(const char* address, uint64_t block_height);
 
 // ************* Financial *************
 
@@ -87,7 +88,6 @@ void freeze(const char* key_image, ErrorBox* error);
 const char* create_transaction(const char* tx_config_json, ErrorBox* error);
 
 const char* describe_tx_set(const char* tx_set_json, ErrorBox* error);
-
 
 #ifdef __cplusplus
 }

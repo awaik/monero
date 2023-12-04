@@ -14,6 +14,10 @@ echo "***************"
 
 #cd ~
 cd $SCRIPTS_DIR
+mkdir -p build
+cd build
+mkdir -p sources
+cd sources
 curl -O https://www.nlnetlabs.nl/downloads/unbound/unbound-1.17.0.tar.gz
 tar -xvzf unbound-1.17.0.tar.gz
 cd unbound-1.17.0

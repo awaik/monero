@@ -1,163 +1,17 @@
-#include <memory>
 #include "monero_flutter.h"
-#include "wallet2.h"
-#include "wallet/monero_wallet.h"
-#include "wallet/monero_wallet_full.h"
-#include "wallet/monero_wallet_model.h"
-#include "daemon/monero_daemon_model.h"
+
+#include <memory>
+#include <string>
+
+#include "extended_monero_wallet.hpp"
+#include "wallet_listener.hpp"
+
 #include "utils/monero_utils.h"
 
-#include <boost/thread/condition_variable.hpp>
+#include "ffi_utils.hpp"
 
 // TODO TEMP
 #include <iostream>
-
-using namespace std;
-using namespace monero;
-
-struct wallet_listener : public monero_wallet_listener
-{
-    void on_sync_progress(uint64_t height, uint64_t start_height, uint64_t end_height, double percent_done, const string& message) override
-    {
-        cout << "height=" << height << "; start_height=" << start_height << "; end_height=" << end_height << "; percent_done=" << percent_done << "; " << message << endl;
-    }
-    void on_new_block(uint64_t height) override{}
-    void on_balances_changed(uint64_t new_balance, uint64_t new_unlocked_balance) override {}
-    void on_output_received(const monero_output_wallet& output) override {}
-    void on_output_spent(const monero_output_wallet& output) override {}
-};
-
-namespace monero
-{
-struct wallet2_listener : public tools::i_wallet2_callback
-{
-public:
-    wallet2_listener(monero_wallet_full& wallet, tools::wallet2& wallet2);
-    ~wallet2_listener();
-};
-
-class monero_wallet_full2 : public monero_wallet_full
-{
-public:
-    
-    static monero_wallet_full2* open_wallet(const std::string& path, const std::string& password, const monero_network_type network_type)
-    {
-        MTRACE("open_wallet(" << path << ", ***, " << network_type << ")");
-        
-        monero_wallet_full2* wallet = new monero_wallet_full2();
-        wallet->m_w2 = std::unique_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(network_type), 1, true));
-        wallet->m_w2->load(path, password);
-        wallet->m_w2->init("");
-        wallet->init_common();
-        
-        return wallet;
-    }
-    
-    static monero_wallet_full2* open_wallet_data(const std::string& password, const monero_network_type network_type, const std::string& keys_data, const std::string& cache_data, const monero_rpc_connection& daemon_connection = monero_rpc_connection())
-    {
-        MTRACE("open_wallet_data(...)");
-        monero_wallet_full2* wallet = new monero_wallet_full2();
-        
-        wallet->m_w2 = std::unique_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(network_type), 1, true));
-        wallet->m_w2->load("", password, keys_data, cache_data);
-        wallet->m_w2->init("");
-        wallet->set_daemon_connection(daemon_connection);
-        wallet->init_common();
-        return wallet;
-      }
-    
-    
-    static monero_wallet_full2* create_wallet_from_seed(const monero_wallet_config& config)
-    {
-        MTRACE("create_wallet_from_seed(...)");
-        
-        // normalize config
-        if (config.m_restore_height == boost::none)
-            config.m_restore_height = 0;
-        
-        // validate mnemonic and get recovery key and language if not multisig
-        crypto::secret_key recovery_key;
-        std::string language = config.m_language.get();
-        
-        if (!config.m_is_multisig.get())
-        {
-            bool is_valid = crypto::ElectrumWords::words_to_bytes(config.m_seed.get(), recovery_key, language);
-            if (!is_valid)
-                throw std::runtime_error("Invalid mnemonic");
-            
-            if (language == crypto::ElectrumWords::old_language_name)
-                language = config.m_language.get();
-        }
-        
-        // validate language
-        if (!crypto::ElectrumWords::is_valid_language(language))
-            throw std::runtime_error("Invalid language: " + language);
-        
-        // apply offset if given
-        if (!config.m_seed_offset.get().empty())
-            recovery_key = cryptonote::decrypt_key(recovery_key, config.m_seed_offset.get());
-        
-        // initialize wallet
-        monero_wallet_full2* wallet = new monero_wallet_full2();
-        
-        wallet->m_w2 = std::unique_ptr<tools::wallet2>(new tools::wallet2(static_cast<cryptonote::network_type>(config.m_network_type.get()), 1, true));
-        
-        wallet->set_daemon_connection(config.m_server);
-        wallet->m_w2->set_seed_language(language);
-        
-        if (config.m_account_lookahead != boost::none) wallet->m_w2->set_subaddress_lookahead(config.m_account_lookahead.get(), config.m_subaddress_lookahead.get());
-        
-        // generate wallet
-        if (config.m_is_multisig.get())
-        {
-            // parse multisig data
-            epee::wipeable_string multisig_data;
-            multisig_data.resize(config.m_seed.get().size() / 2);
-            if (!epee::from_hex::to_buffer(epee::to_mut_byte_span(multisig_data), config.m_seed.get())) throw std::runtime_error("Multisig seed not represented as hexadecimal string");
-            
-            // generate multisig wallet
-            wallet->m_w2->generate(config.m_path.get(), config.m_password.get(), multisig_data, false);
-            wallet->m_w2->enable_multisig(true);
-        }
-        else
-        {
-            // generate normal wallet
-            crypto::secret_key recovery_val = wallet->m_w2->generate(config.m_path.get(), config.m_password.get(), recovery_key, true, false);
-            
-            // validate mnemonic
-            epee::wipeable_string electrum_words;
-            
-            if (!crypto::ElectrumWords::bytes_to_words(recovery_val, electrum_words, language))
-                throw std::runtime_error("Failed to encode seed");
-        }
-        
-        wallet->m_w2->set_refresh_from_block_height(config.m_restore_height.get());
-        wallet->init_common();
-        
-        return wallet;
-    }
-    
-    size_t get_num_subaddresses(uint32_t account_index) const
-    {
-        return m_w2->get_num_subaddresses(account_index);
-    }
-    
-    vector<string> get_public_nodes() const
-    {
-        auto source = m_w2->get_public_nodes();
-        
-        std::vector<std::string> target;
-        target.resize(source.size());
-
-        std::transform(source.begin(), source.end(), target.begin(), [](const cryptonote::public_node& src_item) {
-            return src_item.host + ":" + std::to_string(src_item.rpc_port);
-        });
-
-        return target;
-    }
-};
-
-}
 
 #if __APPLE__
 // Fix for randomx on ios
@@ -169,56 +23,10 @@ extern "C"
 {
 #endif
 
-static const std::vector<std::string> to_vector(const char* const* const array, uint32_t size)
-{
-    std::vector<std::string> result;
-    
-    for (uint32_t i = 0; i < size; i++)
-    {
-        std::string item = std::string(array[i]);
-        result.push_back(item);
-    }
-    
-    return result;
-}
-
-static const char* const* from_vector(const std::vector<std::string>& input)
-{
-    if (input.size() <= 0)
-        return nullptr;
-
-    // deallocate memory in the calling code!
-    char** result = (char**)calloc(input.size() + 1, sizeof(char**));
-
-    char** rp = result;
-
-    for (auto const& s : input)
-    {
-        char* item = (char*)calloc(s.size() + 1, sizeof(char*));
-        *rp++ = std::strcpy(item, s.c_str());
-    }
-
-    (*rp) = nullptr;
-
-    return result;
-}
-
-// Work correctly with '\0' characters!
-static const uint8_t* duplicate_bytes(const std::string& str)
-{
-    std::size_t length = str.length();
-    
-    // deallocate memory in the calling code!
-    uint8_t* bytes = (uint8_t*)calloc(length, sizeof(uint8_t));
-    std::memcpy(bytes, str.c_str(), length);
-    
-    return bytes;
-}
-
-static monero_wallet_full2* _wallet;
+static extended_monero_wallet* _wallet;
 static wallet_listener* _listener;
 
-static void set_wallet(monero_wallet_full2* wallet) {
+static void set_wallet(extended_monero_wallet* wallet) {
     if (nullptr != _wallet) {
         delete _wallet;
         _wallet = nullptr;
@@ -242,27 +50,60 @@ bool is_wallet_loaded()
 
 void restore_wallet_from_seed(const char* path, const char* password, const char* seed, int32_t network_type, ErrorBox* error)
 {
-    auto config = make_shared<monero_wallet_config>();
+    auto config = std::make_shared<monero_wallet_config>();
     config->m_path = path;
     config->m_password = password;
     config->m_seed = seed;
     config->m_network_type = static_cast<monero_network_type>(network_type);
     
-    auto wallet = monero_wallet_full2::create_wallet_from_seed(*config);
+    extended_monero_wallet* wallet;
+
+    try
+    {
+        wallet = extended_monero_wallet::create_wallet_from_seed(*config);
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return;
+    }
+    
     set_wallet(wallet);
 }
 
 void open_wallet_data(const char* password, int32_t network_type, const uint8_t* keys_data, const int32_t keys_data_len, const uint8_t* cache_data, const int32_t cache_data_len, ErrorBox* error)
 {
-    auto wallet = monero_wallet_full2::open_wallet_data(password, static_cast<monero_network_type>(network_type),
-        std::string(reinterpret_cast<const char*>(keys_data), keys_data_len),
-        std::string(reinterpret_cast<const char*>(cache_data), cache_data_len));
+    extended_monero_wallet* wallet;
+    
+    try
+    {
+        wallet = extended_monero_wallet::open_wallet_data(password, static_cast<monero_network_type>(network_type),
+                                                            std::string(reinterpret_cast<const char*>(keys_data), keys_data_len),
+                                                          std::string(reinterpret_cast<const char*>(cache_data), cache_data_len));
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return;
+    }
+    
     set_wallet(wallet);
 }
 
 void load_wallet(const char* path, const char* password, int32_t network_type, ErrorBox* error)
 {
-    auto wallet = monero_wallet_full2::open_wallet(path, password, static_cast<monero_network_type>(network_type));
+    extended_monero_wallet* wallet;
+    
+    try
+    {
+        wallet = extended_monero_wallet::open_wallet(path, password, static_cast<monero_network_type>(network_type));
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return;
+    }
+    
     set_wallet(wallet);
 }
 
@@ -272,7 +113,18 @@ const ByteArray get_keys_data(const char* password, bool view_only, ErrorBox* er
     result.length = 0;
     result.bytes = nullptr;
     
-    string buffer = _wallet->get_keys_file_buffer(password, view_only);
+    std::string buffer;
+    
+    try
+    {
+        buffer = _wallet->get_keys_file_buffer(password, view_only);
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return result;
+    }
+    
     result.length = (int32_t)buffer.length();
     result.bytes = duplicate_bytes(buffer);
     
@@ -285,7 +137,18 @@ const ByteArray get_cache_data(ErrorBox* error)
     result.length = 0;
     result.bytes = nullptr;
     
-    string buffer = _wallet->get_cache_file_buffer();
+    std::string buffer;
+    
+    try
+    {
+        buffer = _wallet->get_cache_file_buffer();
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return result;
+    }
+    
     result.length = (int32_t)buffer.length();
     result.bytes = duplicate_bytes(buffer);
     
@@ -294,12 +157,29 @@ const ByteArray get_cache_data(ErrorBox* error)
 
 void store(ErrorBox* error)
 {
-    _wallet->save();
+    try
+    {
+        _wallet->save();
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return result;
+    }
 }
 
 void close_current_wallet(ErrorBox* error)
 {
-    _wallet->close();
+    try
+    {
+        _wallet->close();
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return result;
+    }
+    
     set_wallet(nullptr);
 }
 
@@ -307,14 +187,38 @@ void close_current_wallet(ErrorBox* error)
 
 const char* prepare_multisig(ErrorBox* error)
 {
-    std::string result = _wallet->prepare_multisig();
+    std::string result;
+    
+    try
+    {
+        result = _wallet->prepare_multisig();
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return nullptr;
+    }
+    
+    if (result.empty())
+        return nullptr;
+    
     return strdup(result.c_str());
 }
 
 const char* make_multisig(const char* const* const info, uint32_t size, uint32_t threshold, const char* password, ErrorBox* error)
 {
     auto info_vector = to_vector(info, size);
-    auto result = _wallet->make_multisig(info_vector, threshold, password);
+    std::string result;
+    
+    try
+    {
+        result = _wallet->make_multisig(info_vector, threshold, password);
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return nullptr;
+    }
     
     if (result.empty())
         return nullptr;
@@ -325,7 +229,18 @@ const char* make_multisig(const char* const* const info, uint32_t size, uint32_t
 const char* exchange_multisig_keys(const char* const* const info, uint32_t size, const char* password, ErrorBox* error)
 {
     auto info_vector = to_vector(info, size);
-    auto init_result = _wallet->exchange_multisig_keys(info_vector, password);
+    monero_multisig_init_result init_result;
+    
+    try
+    {
+        init_result = _wallet->exchange_multisig_keys(info_vector, password);
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return nullptr;
+    }
+    
     auto multisig_hex = init_result.m_multisig_hex;
     
     return strdup(multisig_hex->c_str());
@@ -333,12 +248,32 @@ const char* exchange_multisig_keys(const char* const* const info, uint32_t size,
 
 bool is_multisig_import_needed(ErrorBox* error)
 {
-    return _wallet->is_multisig_import_needed();
+    bool result;
+    
+    try
+    {
+        result = _wallet->is_multisig_import_needed();
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return false;
+    }
 }
 
 void export_multisig_images(const char** info, ErrorBox* error)
 {
-    string multisig_hex = _wallet->export_multisig_hex();
+    std::string multisig_hex;
+    
+    try
+    {
+        multisig_hex = _wallet->export_multisig_hex();
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return;
+    }
     
     if (!multisig_hex.empty())
         (*info) = strdup(multisig_hex.c_str());
@@ -347,7 +282,18 @@ void export_multisig_images(const char** info, ErrorBox* error)
 uint32_t import_multisig_images(const char* const* const info, uint32_t size, ErrorBox* error)
 {
     auto multisig_hexes = to_vector(info, size);
-    auto result = _wallet->import_multisig_hex(multisig_hexes);
+    uint32_t result;
+    
+    try
+    {
+        result = _wallet->import_multisig_hex(multisig_hexes);
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return -1;
+    }
+    
     return result;
 }
 
@@ -356,12 +302,12 @@ uint32_t import_multisig_images(const char* const* const info, uint32_t size, Er
 void setup_node(const char* address, const char* login, const char* password, ErrorBox* error)
 {
     bool is_connected = _wallet->is_connected_to_daemon();
-    cout << "is_connected_to_daemon=" << is_connected << endl;
+    std::cout << "is_connected_to_daemon=" << is_connected << std::endl;
     
     _wallet->set_daemon_connection(address, login, password);
     
     is_connected = _wallet->is_connected_to_daemon();
-    cout << "is_connected_to_daemon=" << is_connected << endl;
+    std::cout << "is_connected_to_daemon=" << is_connected << std::endl;
 }
 
 void start_refresh(ErrorBox* error)
@@ -379,7 +325,7 @@ uint64_t get_syncing_height(ErrorBox* error)
     auto daemon_height = _wallet->get_daemon_height();
     auto height = _wallet->get_height();
     
-    cout << "restore_height=" << restore_height << "; daemon_height" << daemon_height << "; height=" << height << endl;
+    std::cout << "restore_height=" << restore_height << "; daemon_height" << daemon_height << "; height=" << height << std::endl;
     
     return 1;
 }
@@ -389,30 +335,31 @@ uint64_t get_current_height(ErrorBox* error)
     return 0;
 }
 
-uint64_t get_node_height_or_update(uint64_t base_eight)
+uint64_t get_node_height(uint64_t base_eight, ErrorBox* error)
 {
     return 0;
 }
 
-const char* const* get_public_nodes()
+const char* const* get_public_nodes(ErrorBox* error)
 {
     std::vector<std::string> nodes = _wallet->get_public_nodes();
     return from_vector(nodes);
 }
 
-uint64_t get_single_block_tx_count(const std::string& address, uint64_t block_height)
+uint64_t get_single_block_tx_count(const char* address, uint64_t block_height, ErrorBox* error)
 {
+    std::string address_value = address;
     auto http_client_factory = std::unique_ptr<epee::net_utils::http::http_client_factory>(new net::http::client_factory());
     auto http_client(http_client_factory->create());
     
     boost::optional<epee::net_utils::http::login> login{};
     login.emplace("", "");
     
-    auto ssl = address.rfind("https", 0) == 0 ?
+    auto ssl = address_value.rfind("https", 0) == 0 ?
     epee::net_utils::ssl_support_t::e_ssl_support_enabled :
     epee::net_utils::ssl_support_t::e_ssl_support_disabled;
     
-    http_client->set_server(address, login, ssl);
+    http_client->set_server(address_value, login, ssl);
     std::chrono::seconds timeout = std::chrono::minutes(3);
     
     cryptonote::COMMAND_RPC_GET_BLOCKS_BY_HEIGHT::request req;
@@ -435,20 +382,54 @@ uint64_t get_single_block_tx_count(const std::string& address, uint64_t block_he
 
 const char* get_address(ErrorBox* error)
 {
-    auto address = _wallet->get_address(0, 0);
+    std::string address;
+    
+    try
+    {
+        address = _wallet->get_address(0, 0);
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return nullptr;
+    }
+    
     return strdup(address.c_str());
 }
 
 const char* get_receive_address(ErrorBox* error)
 {
-    uint32_t num_subaddresses = (uint32_t)_wallet->get_num_subaddresses(0);
-    auto address = _wallet->get_address(0, num_subaddresses);
+    std::string address;
+    
+    try
+    {
+        auto num_subaddresses = (uint32_t)_wallet->get_num_subaddresses(0);
+        address = _wallet->get_address(0, num_subaddresses);
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return nullptr;
+    }
+    
     return strdup(address.c_str());
 }
 
 uint64_t get_confirmed_balance(ErrorBox* error)
 {
-    return _wallet->get_unlocked_balance();
+    uint64_t result;
+    
+    try
+    {
+        result = _wallet->get_unlocked_balance();
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return -1;
+    }
+    
+    return result;
 }
 
 const char* get_all_transactions_json(ErrorBox* error)
@@ -470,18 +451,18 @@ const char* get_all_transactions_json(ErrorBox* error)
 
 const char* get_utxos_json(ErrorBox* error)
 {
-    auto tx_query = make_shared<monero_tx_query>();
+    auto tx_query = std::make_shared<monero_tx_query>();
     tx_query->m_is_locked = false;
     tx_query->m_is_confirmed = true;
     
-    auto output_query = make_shared<monero_output_query>();
+    auto output_query = std::make_shared<monero_output_query>();
     output_query->m_is_spent = false;
     output_query->m_tx_query = tx_query;
     
     // get utxos
     auto outputs = _wallet->get_outputs(*output_query);
     
-    vector<shared_ptr<monero_block>> blocks = monero_utils::get_blocks_from_outputs(outputs);
+    std::vector<std::shared_ptr<monero_block>> blocks = monero_utils::get_blocks_from_outputs(outputs);
     
     rapidjson::Document doc;
     doc.SetObject();
@@ -498,12 +479,28 @@ const char* get_utxos_json(ErrorBox* error)
 
 void thaw(const char* key_image, ErrorBox* error)
 {
-    _wallet->thaw_output(key_image);
+    try
+    {
+        _wallet->thaw_output(key_image);
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return;
+    }
 }
 
 void freeze(const char* key_image, ErrorBox* error)
 {
-    _wallet->freeze_output(key_image);
+    try
+    {
+        _wallet->freeze_output(key_image);
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return;
+    }
 }
 
 const char* create_transaction(const char* tx_config_json, ErrorBox* error)
@@ -522,9 +519,19 @@ const char* create_transaction(const char* tx_config_json, ErrorBox* error)
 
 const char* describe_tx_set(const char* tx_set_json, ErrorBox* error)
 {
-    auto tx_set = monero_tx_set::deserialize(tx_set_json);
-    auto result = _wallet->describe_tx_set(tx_set);
-    string result_json = result.serialize();
+    std::string result_json;
+    
+    try
+    {
+        auto tx_set = monero_tx_set::deserialize(tx_set_json);
+        auto result = _wallet->describe_tx_set(tx_set);
+        result_json = result.serialize();
+    }
+    catch (std::exception& e)
+    {
+        error->message = strdup(e.what());
+        return nullptr;
+    }
     
     return strdup(result_json.c_str());
 }
