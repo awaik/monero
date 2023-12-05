@@ -14,4 +14,17 @@ struct wallet_listener : public monero_wallet_listener
     void on_balances_changed(uint64_t new_balance, uint64_t new_unlocked_balance) override;
     void on_output_received(const monero_output_wallet& output) override;
     void on_output_spent(const monero_output_wallet& output) override;
+    
+    uint64_t get_height() const;
+    uint64_t get_start_height() const;
+    uint64_t get_end_height() const;
+    double get_percent_done() const;
+    std::string get_message() const;
+    
+private:
+    uint64_t m_height;
+    uint64_t m_start_height;
+    uint64_t m_end_height;
+    double m_percent_done;
+    std::string m_message;
 };

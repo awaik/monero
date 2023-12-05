@@ -1,11 +1,11 @@
 #include <iostream>
 #include <unistd.h>
 
-#include "monero_flutter.h"
+#include "monero_ffi.hpp"
 
 int main(int argc, char** argv)
 {
-    const char* path = "?;;№/Users/dmytro/Documents/test_wallets/moneroWalletVer3";
+    const char* path = "/Users/dmytro/Documents/_WALLETS/v1/moneroWalletVer3";
     //const char* seed = "point nerves ungainly gather loudly theatrics october misery aphid website attire erected shelter ouch hesitate nouns suede omnibus folding last fruit upbeat haystack hedgehog gather";
     
     bool wallet_exists = is_wallet_exist(path);
@@ -23,13 +23,15 @@ int main(int argc, char** argv)
     auto address2 = get_receive_address(&error);
     std::cout << "address2=" << address2 << std::endl;
     
+    //return 0;
+    
     setup_node("xmrno.de:18089", "", "", &error);
     
     start_refresh(&error);
     
     store(&error);
     
-    auto public_nodes = get_public_nodes();
+    auto public_nodes = get_public_nodes(&error);
     std::cout << "public_node=" << public_nodes[0] << std::endl;
     
 //    auto utxos_json = get_utxos_json(&error);
@@ -45,7 +47,7 @@ int main(int argc, char** argv)
     
     while (true)
     {
-        auto syncing_height = get_syncing_height(&error);
+        auto syncing_height = get_current_height(&error);
         std::cout << "syncing_height=" << syncing_height << std::endl;
         sleep(1);
     }

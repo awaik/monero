@@ -10,7 +10,7 @@ extern "C"
 
 typedef struct ErrorBox
 {
-    int code = -1;
+    int code;
     const char* message;
 } ErrorBox;
 
@@ -59,15 +59,19 @@ void setup_node(const char* address, const char* login, const char* password, Er
 
 void start_refresh(ErrorBox* error);
 
-uint64_t get_syncing_height(ErrorBox* error);
+uint64_t get_start_height(ErrorBox* error);
 
 uint64_t get_current_height(ErrorBox* error);
 
-uint64_t get_node_height_or_update(uint64_t base_eight);
+uint64_t get_end_height(ErrorBox* error);
 
-const char* const* get_public_nodes();
+double get_percent_done(ErrorBox* error);
 
-uint64_t get_single_block_tx_count(const char* address, uint64_t block_height);
+const char* get_listener_message(ErrorBox* error);
+
+const char* const* get_public_nodes(ErrorBox* error);
+
+uint64_t get_single_block_tx_count(const char* address, uint64_t block_height, ErrorBox* error);
 
 // ************* Financial *************
 
