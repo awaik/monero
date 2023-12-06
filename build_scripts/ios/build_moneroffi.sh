@@ -43,7 +43,7 @@ cmake -D IOS=ON \
 	-DCMAKE_INSTALL_PREFIX=${BUILD_DIR}  \
 	../..
 
-make -j4
+make -j4 -d
 #find . -path ./lib -prune -o -name '*.a' -exec cp '{}' lib \;
 #cp -R ./lib/* $DEST_LIB_DIR
 #cp ../../src/wallet/api/wallet2_api.h  $DEST_INCLUDE_DIR
