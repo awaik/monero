@@ -2,7 +2,7 @@
 
 . ./config.sh
 
-#./prepare_system.sh
+./prepare_system.sh
 
 ./make_dirs.sh
 
