@@ -4,8 +4,6 @@
 
 MONERO_DIR_PATH="${SOURCE_DIR}/monero"
 BUILD_TYPE=release
-DEST_LIB_DIR=${BUILD_LIB_DIR}/monero
-DEST_INCLUDE_DIR=${BUILD_INCLUDE_DIR}/monero
 
 echo "Copy monero to $MONERO_DIR_PATH"
 mkdir -p $MONERO_DIR_PATH
@@ -13,9 +11,6 @@ cd $MONERO_DIR_PATH
 rsync -aP --exclude=build_scripts $SCRIPTS_DIR/../../external/monero-cpp/external/monero-project/ ${MONERO_DIR_PATH}/
 mkdir -p build
 cd ..
-
-mkdir -p $DEST_LIB_DIR
-mkdir -p $DEST_INCLUDE_DIR
 
 for arch in "arm64" #"armv7" "arm64"
 do
@@ -46,7 +41,7 @@ cmake -D IOS=ON \
 	../..
 make wallet_api -j4
 find . -path ./lib -prune -o -name '*.a' -exec cp '{}' lib \;
-cp -R ./lib/* $DEST_LIB_DIR
+cp -R ./lib/* ${BUILD_LIB_DIR}
 popd
 
 done

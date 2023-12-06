@@ -112,6 +112,7 @@ endif()
 ############
 
 find_library(SODIUM_LIBRARY sodium REQUIRED)
+message(STATUS "Using libsodium library at ${SODIUM_LIBRARY}")
 
 ############
 # HIDAPI
@@ -137,54 +138,37 @@ endif()
 # Unbound
 #############
 
-find_library(UNBOUND_LIBRARY unbound)
+find_library(UNBOUND_LIB unbound)
 
 #############
 # Expat
 #############
 
-find_library(EXPAT_LIBRARY expat)
+find_library(EXPAT_LIB expat)
 
 #############
 # zmq
 #############
 
-find_library(ZMQ_LIBRARY zmq)
+find_library(ZMQ_LIB zmq)
 
 ########################
 # Iconv library
 ########################
 
-find_library(ICONV_LIBRARY iconv)
+find_library(ICONV_LIB iconv)
 
 #############
 # Monero
 #############
 
-find_library(BLOCKCHAIN_DB_LIBRARY blockchain_db)
-find_library(BLOCKS_LIBRARY blocks)
-find_library(CHECKPOINTS_LIBRARY checkpoints)
-find_library(CNCRYPTO_LIBRARY cncrypto)
-find_library(COMMON_LIBRARY common)
-find_library(CRYPTONOTE_BASIC_LIBRARY cryptonote_basic)
-find_library(CRYPTONOTE_CORE_LIBRARY cryptonote_core)
-find_library(CRYPTONOTE_FORMAT_UTILS_BASIC_LIBRARY cryptonote_format_utils_basic)
-find_library(DEVICE_LIBRARY device)
-find_library(DEVICE_TREZOR_LIBRARY device_trezor)
-find_library(EASYLOGGING_LIBRARY easylogging)
-find_library(EPEE_LIBRARY epee)
-find_library(HARDFORKS_LIBRARY hardforks)
-find_library(LMDB_LIBRARY lmdb)
-find_library(MNEMONICS_LIBRARY mnemonics)
-find_library(MULTISIG_LIBRARY multisig)
-find_library(NET_LIBRARY net)
-find_library(RANDOMX_LIBRARY randomx)
-find_library(RINGCT_LIBRARY ringct)
-find_library(RINGCT_BASIC_LIBRARY ringct_basic)
-find_library(RPC_BASE_LIBRARY rpc_base)
-find_library(VERSION_LIBRARY version)
-find_library(WALLET_LIBRARY wallet)
-find_library(WALLET_API_LIBRARY wallet_api)
+find_library(MONERO_LIB monero)
+
+#if (APPLE AND IOS)
+#  add_library(monero STATIC IMPORTED)
+#else()
+#  message(STATUS "Could not find monero")
+#endif()
 
 ########################
 # monero-cpp
@@ -208,37 +192,12 @@ if (APPLE AND IOS)
     PUBLIC
     ${Boost_LIBRARIES}
     ${OPENSSL_LIBRARIES}
-    
     ${SODIUM_LIBRARY}
-    ${UNBOUND_LIBRARY}
-    ${EXPAT_LIBRARY}
-    ${ZMQ_LIBRARY}
-    ${ICONV_LIBRARY}
-    
-    ${BLOCKCHAIN_DB_LIBRARY}
-    ${BLOCKS_LIBRARY}
-    ${CHECKPOINTS_LIBRARY}
-    ${CNCRYPTO_LIBRARY}
-    ${COMMON_LIBRARY}
-    ${CRYPTONOTE_BASIC_LIBRARY}
-    ${CRYPTONOTE_CORE_LIBRARY}
-    ${CRYPTONOTE_FORMAT_UTILS_BASIC_LIBRARY}
-    ${DEVICE_LIBRARY}
-    ${DEVICE_TREZOR_LIBRARY}
-    ${EASYLOGGING_LIBRARY}
-    ${EPEE_LIBRARY}
-    ${HARDFORKS_LIBRARY}
-    ${LMDB_LIBRARY}
-    ${MNEMONICS_LIBRARY}
-    ${MULTISIG_LIBRARY}
-    ${NET_LIBRARY}
-    ${RANDOMX_LIBRARY}
-    ${RINGCT_LIBRARY}
-    ${RINGCT_BASIC_LIBRARY}
-    ${RPC_BASE_LIBRARY}
-    ${VERSION_LIBRARY}
-    ${WALLET_LIBRARY}
-    ${WALLET_API_LIBRARY}
+    ${UNBOUND_LIB}
+    ${EXPAT_LIB}
+    ${ZMQ_LIB}
+    ${MONERO_LIB}
+    ${ICONV_LIB}
   )
 else()
   message(STATUS "temp")

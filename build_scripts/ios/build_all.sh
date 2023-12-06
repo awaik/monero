@@ -15,6 +15,6 @@ cd $SCRIPTS_DIR
 ./build_zmq.sh
 ./build_unbound.sh
 ./build_monero.sh
-./build_moneroffi.sh
+./build_monero_ffi.sh
 
-#./setup.sh
+./setup.sh

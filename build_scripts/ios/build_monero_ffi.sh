@@ -2,10 +2,10 @@
 
 . ./config.sh
 
-MONEROFFI_DIR_PATH="${SOURCE_DIR}/moneroffi"
+MONEROFFI_DIR_PATH="${SOURCE_DIR}/monero-ffi"
 BUILD_TYPE=release
-DEST_LIB_DIR=${BUILD_LIB_DIR}/moneroffi
-DEST_INCLUDE_DIR=${BUILD_INCLUDE_DIR}/moneroffi
+DEST_LIB_DIR=${BUILD_LIB_DIR}/monero-ffi
+DEST_INCLUDE_DIR=${BUILD_INCLUDE_DIR}/monero-ffi
 
 echo "Copy monero to $MONEROFFI_DIR_PATH"
 mkdir -p $MONEROFFI_DIR_PATH
@@ -43,10 +43,11 @@ cmake -D IOS=ON \
 	-DCMAKE_INSTALL_PREFIX=${BUILD_DIR}  \
 	../..
 
-make -j4 -d
-#find . -path ./lib -prune -o -name '*.a' -exec cp '{}' lib \;
-#cp -R ./lib/* $DEST_LIB_DIR
-#cp ../../src/wallet/api/wallet2_api.h  $DEST_INCLUDE_DIR
+make -j4
+
+cp ./*.dylib $DEST_LIB_DIR
+cp ../../src/monero_ffi.hpp $DEST_INCLUDE_DIR
+
 popd
 
 done
