@@ -191,7 +191,7 @@ set(
     ${MONERO_CPP_SRC}/wallet/monero_wallet_full.cpp
 )
 
-add_library(monero-cpp ${MONEROCPP_SRC_FILES})
+add_library(monero-cpp SHARED ${MONEROCPP_SRC_FILES})
 
 target_link_libraries(monero-cpp
   wallet
@@ -233,16 +233,53 @@ target_link_libraries(monero-cpp
   ${ICONV_LIB}
 )
 
-set(
-    MONEROFFI_SRC_FILES
-    ${MONERO_FFI_SRC}/ffi_utils.cpp
-    ${MONERO_FFI_SRC}/wallet_listener.cpp
-    ${MONERO_FFI_SRC}/extended_monero_wallet.cpp
-    ${MONERO_FFI_SRC}/monero_ffi.cpp
-)
-
-add_library(monero-ffi SHARED ${MONEROFFI_SRC_FILES})
-
-target_link_libraries(monero-ffi
-  monero-cpp
-)
+#set(
+#    MONEROFFI_SRC_FILES
+#    ${MONERO_FFI_SRC}/ffi_utils.cpp
+#    ${MONERO_FFI_SRC}/wallet_listener.cpp
+#    ${MONERO_FFI_SRC}/extended_monero_wallet.cpp
+#    ${MONERO_FFI_SRC}/monero_ffi.cpp
+#)
+#
+#add_library(monero-ffi SHARED ${MONEROFFI_SRC_FILES})
+#
+#target_link_libraries(monero-ffi
+#  monero-cpp
+#  wallet
+#  rpc_base
+#  net
+#  lmdb
+#  unbound
+#  easylogging
+#  cryptonote_core
+#  cryptonote_protocol
+#  cryptonote_basic
+#  cryptonote_format_utils_basic
+#  mnemonics
+#  ringct
+#  ringct_basic
+#  common
+#  cncrypto
+#  blockchain_db
+#  blocks
+#  checkpoints
+#  device
+#  device_trezor
+#  multisig
+#  version
+#  randomx
+#  epee
+#  hardforks
+#  cncrypto
+#  
+#  ${UNBOUND_LIB}
+#  ${Boost_LIBRARIES}
+#  ${Protobuf_LIBRARY}
+#  ${LibUSB_LIBRARIES}
+#  ${OPENSSL_LIBRARIES}
+#  ${SODIUM_LIBRARY}
+#  ${HIDAPI_LIBRARIES}
+#  ${EXTRA_LIBRARIES}
+#	
+#  ${ICONV_LIB}
+#)

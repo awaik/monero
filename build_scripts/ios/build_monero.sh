@@ -44,10 +44,9 @@ cmake -D IOS=ON \
 	-DCMAKE_INSTALL_PREFIX=${BUILD_DIR}  \
     -DUSE_DEVICE_TREZOR=OFF \
 	../..
-#make wallet_api -j4
-#find . -path ./lib -prune -o -name '*.a' -exec cp '{}' lib \;
-#cp -R ./lib/* $DEST_LIB_DIR
-#cp ../../src/wallet/api/wallet2_api.h  $DEST_INCLUDE_DIR
+make wallet_api -j4
+find . -path ./lib -prune -o -name '*.a' -exec cp '{}' lib \;
+cp -R ./lib/* $DEST_LIB_DIR
 popd
 
 done
