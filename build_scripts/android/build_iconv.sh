@@ -13,7 +13,7 @@ echo $ICONV_SHA256 $ICONV_FILE_PATH | sha256sum -c - || exit 1
 for arch in aarch aarch64 i686 x86_64
 do
 
-PREFIX=${BUILD_DIR}/prefix_${arch}
+BUILD_ARCH_DIR=${BUILD_DIR}/prefix_${arch}
 PATH="${TOOLCHAIN_BASE_DIR}_${arch}/bin:${ORIGINAL_PATH}"
 
 case $arch in
@@ -31,7 +31,7 @@ cd $BUILD_DIR
 rm -rf $ICONV_SRC_DIR
 tar -xzf $ICONV_FILE_PATH -C $BUILD_DIR
 cd $ICONV_SRC_DIR
-CC=${CLANG} CXX=${CXXLANG} ./configure --build=x86_64-linux-gnu --host=${HOST} --prefix=${PREFIX} --disable-rpath
+CC=${CLANG} CXX=${CXXLANG} ./configure --build=x86_64-linux-gnu --host=${HOST} --prefix=${BUILD_ARCH_DIR} --disable-rpath
 make -j$THREADS
 make install
 

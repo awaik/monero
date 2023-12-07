@@ -9,9 +9,9 @@ BOOST_VERSION=1.72.0
 for arch in "aarch" "aarch64" "i686" "x86_64"
 do
 
-PREFIX=$BUILD_DIR/prefix_${arch}
+BUILD_ARCH_DIR=$BUILD_DIR/prefix_${arch}
 PATH="${TOOLCHAIN_BASE_DIR}_${arch}/bin:${ORIGINAL_PATH}"
-./init_boost.sh $arch $PREFIX $BOOST_SRC_DIR $BOOST_FILENAME $BOOST_VERSION
-./finish_boost.sh $arch $PREFIX $BOOST_SRC_DIR $BOOST_SRC_DIR
+./init_boost.sh $arch $BUILD_ARCH_DIR $BOOST_SRC_DIR $BOOST_FILENAME $BOOST_VERSION
+./finish_boost.sh $arch $BUILD_ARCH_DIR $BOOST_SRC_DIR $BOOST_SRC_DIR
 
 done

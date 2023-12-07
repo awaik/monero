@@ -24,7 +24,7 @@ echo $OPENSSL_SHA256 $OPENSSL_FILE_PATH | sha256sum -c - || exit 1
 
 for arch in "aarch" "aarch64" "i686" "x86_64"
 do
-PREFIX=$BUILD_DIR/prefix_${arch}
+BUILD_ARCH_DIR=$BUILD_DIR/prefix_${arch}
 TOOLCHAIN=${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64
 PATH="${TOOLCHAIN}/bin:${ORIGINAL_PATH}"
 
@@ -44,10 +44,10 @@ cd $OPENSSL_SRC_DIR
 CC=clang ANDROID_NDK=$TOOLCHAIN \
 	./Configure ${X_ARCH} \
 	no-shared no-tests \
-	--with-zlib-include=${PREFIX}/include \
-	--with-zlib-lib=${PREFIX}/lib \
-	--prefix=${PREFIX} \
-	--openssldir=${PREFIX} \
+	--with-zlib-include=${BUILD_ARCH_DIR}/include \
+	--with-zlib-lib=${BUILD_ARCH_DIR}/lib \
+	--prefix=${BUILD_ARCH_DIR} \
+	--openssldir=${BUILD_ARCH_DIR} \
 	-D__ANDROID_API__=$API 
 make -j$THREADS
 make -j$THREADS install_sw

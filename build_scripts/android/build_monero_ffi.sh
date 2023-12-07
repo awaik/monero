@@ -11,11 +11,11 @@ rsync -aP --exclude=build_scripts ${SCRIPTS_DIR}/../../ ${MONEROFFI_SRC_DIR}/
 for arch in "aarch" "aarch64" "i686" "x86_64"
 do
 FLAGS=""
-PREFIX=${BUILD_DIR}/prefix_${arch}
-DEST_LIB_DIR=${PREFIX}/lib/moneroffi
-DEST_INCLUDE_DIR=${PREFIX}/include/moneroffi
-export CMAKE_INCLUDE_PATH="${PREFIX}/include"
-export CMAKE_LIBRARY_PATH="${PREFIX}/lib"
+BUILD_ARCH_DIR=${BUILD_DIR}/prefix_${arch}
+DEST_LIB_DIR=${BUILD_ARCH_DIR}/lib/moneroffi
+DEST_INCLUDE_DIR=${BUILD_ARCH_DIR}/include/moneroffi
+export CMAKE_INCLUDE_PATH="${BUILD_ARCH_DIR}/include"
+export CMAKE_LIBRARY_PATH="${BUILD_ARCH_DIR}/lib"
 ANDROID_STANDALONE_TOOLCHAIN_PATH="${TOOLCHAIN_BASE_DIR}_${arch}"
 PATH="${ANDROID_STANDALONE_TOOLCHAIN_PATH}/bin:${ORIGINAL_PATH}"
 
@@ -61,8 +61,7 @@ cd ./build/release
 CC=${CLANG} CXX=${CXXLANG} cmake -D USE_DEVICE_TREZOR=OFF -D BUILD_GUI_DEPS=1 -D BUILD_TESTS=OFF -D ARCH=${ARCH} -D STATIC=ON -D BUILD_64=${BUILD_64} -D CMAKE_BUILD_TYPE=release -D ANDROID=true -D INSTALL_VENDORED_LIBUNBOUND=ON -D BUILD_TAG=${TAG} -D CMAKE_SYSTEM_NAME="Android" -D CMAKE_ANDROID_STANDALONE_TOOLCHAIN="${ANDROID_STANDALONE_TOOLCHAIN_PATH}" -D CMAKE_ANDROID_ARCH_ABI=${ARCH_ABI} $FLAGS ../..
     
 make -j$THREADS
-#find . -path ./lib -prune -o -name '*.a' -exec cp '{}' lib \;
 
-#cp -r ./lib/* $DEST_LIB_DIR
-#cp ../../src/wallet/api/wallet2_api.h  $DEST_INCLUDE_DIR
+cp -r ./*.so $DEST_LIB_DIR
+cp ../../src/monero_ffi.hpp $DEST_INCLUDE_DIR
 done

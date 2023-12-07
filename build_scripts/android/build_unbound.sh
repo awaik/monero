@@ -8,7 +8,7 @@ EXPAT_SRC_DIR=$BUILD_DIR/libexpat
 
 for arch in "aarch" "aarch64" "i686" "x86_64"
 do
-PREFIX=$BUILD_DIR/prefix_${arch}
+BUILD_ARCH_DIR=$BUILD_DIR/prefix_${arch}
 TOOLCHAIN=${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64
 PATH="${TOOLCHAIN_BASE_DIR}_${arch}/bin:${ORIGINAL_PATH}"
 
@@ -26,7 +26,7 @@ case $arch in
 esac 
 
 ./buildconf.sh
-CC=clang CXX=clang++ ./configure --enable-static --disable-shared --prefix=${PREFIX} --host=${HOST}
+CC=clang CXX=clang++ ./configure --enable-static --disable-shared --prefix=${BUILD_ARCH_DIR} --host=${HOST}
 make -j$THREADS
 make -j$THREADS install
 done
@@ -37,7 +37,7 @@ UNBOUND_SRC_DIR=$BUILD_DIR/unbound-1.16.2
 
 for arch in "aarch" "aarch64" "i686" "x86_64"
 do
-PREFIX=$BUILD_DIR/prefix_${arch}
+BUILD_ARCH_DIR=$BUILD_DIR/prefix_${arch}
 TOOLCHAIN=${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64
 
 case $arch in
@@ -59,7 +59,7 @@ case $arch in
 	*)	       HOST="${arch}-linux-android";;
 esac
 
-CC=clang CXX=clang++ ./configure --prefix=${PREFIX} --host=${HOST} --enable-static --disable-shared --disable-flto --with-ssl=${PREFIX} --with-libexpat=${PREFIX}
+CC=clang CXX=clang++ ./configure --prefix=${BUILD_ARCH_DIR} --host=${HOST} --enable-static --disable-shared --disable-flto --with-ssl=${BUILD_ARCH_DIR} --with-libexpat=${BUILD_ARCH_DIR}
 make -j$THREADS
 make -j$THREADS install
 done

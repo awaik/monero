@@ -11,16 +11,11 @@ rsync -aP --exclude=build_scripts ${SCRIPTS_DIR}/../../external/monero-cpp/exter
 for arch in "aarch" "aarch64" "i686" "x86_64"
 do
 FLAGS=""
-PREFIX=${BUILD_DIR}/prefix_${arch}
-DEST_LIB_DIR=${PREFIX}/lib/monero
-DEST_INCLUDE_DIR=${PREFIX}/include/monero
-export CMAKE_INCLUDE_PATH="${PREFIX}/include"
-export CMAKE_LIBRARY_PATH="${PREFIX}/lib"
+BUILD_ARCH_DIR=${BUILD_DIR}/prefix_${arch}
+export CMAKE_INCLUDE_PATH="${BUILD_ARCH_DIR}/include"
+export CMAKE_LIBRARY_PATH="${BUILD_ARCH_DIR}/lib"
 ANDROID_STANDALONE_TOOLCHAIN_PATH="${TOOLCHAIN_BASE_DIR}_${arch}"
 PATH="${ANDROID_STANDALONE_TOOLCHAIN_PATH}/bin:${ORIGINAL_PATH}"
-
-mkdir -p $DEST_LIB_DIR
-mkdir -p $DEST_INCLUDE_DIR
 
 case $arch in
 	"aarch"	)
@@ -63,6 +58,5 @@ CC=${CLANG} CXX=${CXXLANG} cmake -D USE_DEVICE_TREZOR=OFF -D BUILD_GUI_DEPS=1 -D
 make wallet_api -j$THREADS
 find . -path ./lib -prune -o -name '*.a' -exec cp '{}' lib \;
 
-cp -r ./lib/* $DEST_LIB_DIR
-cp ../../src/wallet/api/wallet2_api.h  $DEST_INCLUDE_DIR
+cp -r ./lib/* $BUILD_ARCH_DIR
 done

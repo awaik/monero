@@ -5,7 +5,7 @@
 for arch in "aarch" "aarch64" "i686" "x86_64"
 do
 
-PREFIX=${BUILD_DIR}/prefix_${arch}
+BUILD_ARCH_DIR=${BUILD_DIR}/prefix_${arch}
 ABI=""
 
 case $arch in
@@ -19,18 +19,13 @@ case $arch in
 		ABI="x86_64";;
 esac
 
-LIB_DIR=${DIST_DIR}/${ABI}/lib
-INCLUDE_DIR=${DIST_DIR}/${ABI}/include
-LIBANBOUND_PATH=${PREFIX}/lib/libunbound.a
+DIST_LIB_DIR=${DIST_DIR}/${ABI}/lib
+DIST_INCLUDE_DIR=${DIST_DIR}/${ABI}/include
 
-mkdir -p $LIB_DIR
-mkdir -p $INCLUDE_DIR
+mkdir -p $DIST_LIB_DIR
+mkdir -p $DIST_INCLUDE_DIR
 
-cp -r ${PREFIX}/lib/* $LIB_DIR
-cp -r ${PREFIX}/include/* $INCLUDE_DIR
-
-if [ -f "$LIBANBOUND_PATH" ]; then
- cp $LIBANBOUND_PATH ${LIB_DIR}/monero
-fi
+cp -r ${BUILD_ARCH_DIR}/lib/* $DIST_LIB_DIR
+cp -r ${BUILD_ARCH_DIR}/include/* $DIST_INCLUDE_DIR
 
 done

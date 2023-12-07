@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ARCH=$1
-PREFIX=$2
+BUILD_ARCH_DIR=$2
 BOOST_SRC_DIR=$3
 BOOST_FILENAME=$4
 BOOST_VERSION=$5
@@ -16,7 +16,7 @@ echo $BOOST_SHA256 $BOOST_FILE_PATH | sha256sum -c - || exit 1
 
 cd $BUILD_DIR
 rm -rf $BOOST_SRC_DIR
-rm -rf $PREFIX/include/boost
+rm -rf $BUILD_ARCH_DIR/include/boost
 tar -xvf $BOOST_FILE_PATH -C $BUILD_DIR
 cd $BOOST_SRC_DIR
-./bootstrap.sh --prefix=${PREFIX}
+./bootstrap.sh --prefix=${BUILD_ARCH_DIR}
