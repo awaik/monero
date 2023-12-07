@@ -25,7 +25,10 @@ DIST_INCLUDE_DIR=${DIST_DIR}/${ABI}/include
 mkdir -p $DIST_LIB_DIR
 mkdir -p $DIST_INCLUDE_DIR
 
-cp -r ${BUILD_ARCH_DIR}/lib/monero-ffi/* $DIST_LIB_DIR
+#cp -r ${BUILD_ARCH_DIR}/lib/monero-ffi/* $DIST_LIB_DIR
+#cp -r ${BUILD_ARCH_DIR}/include/monero-ffi/* $DIST_INCLUDE_DIR
+
+cp -r ${BUILD_ARCH_DIR}/lib/* $DIST_LIB_DIR
 cp -r ${BUILD_ARCH_DIR}/include/monero-ffi/* $DIST_INCLUDE_DIR
 
 done
