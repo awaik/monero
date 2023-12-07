@@ -58,5 +58,5 @@ CC=${CLANG} CXX=${CXXLANG} cmake -D USE_DEVICE_TREZOR=OFF -D BUILD_GUI_DEPS=1 -D
 make wallet_api -j$THREADS
 find . -path ./lib -prune -o -name '*.a' -exec cp '{}' lib \;
 
-cp -r ./lib/* $BUILD_ARCH_DIR
+cp -r ./lib/* $BUILD_ARCH_DIR/lib
 done

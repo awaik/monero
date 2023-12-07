@@ -2,7 +2,7 @@
 
 . ./config.sh
 
-MONEROFFI_SRC_DIR=${BUILD_DIR}/moneroffi
+MONEROFFI_SRC_DIR=${BUILD_DIR}/monero-ffi
 
 mkdir -p $MONEROFFI_SRC_DIR
 cd $MONEROFFI_SRC_DIR
@@ -12,8 +12,8 @@ for arch in "aarch" "aarch64" "i686" "x86_64"
 do
 FLAGS=""
 BUILD_ARCH_DIR=${BUILD_DIR}/prefix_${arch}
-DEST_LIB_DIR=${BUILD_ARCH_DIR}/lib/moneroffi
-DEST_INCLUDE_DIR=${BUILD_ARCH_DIR}/include/moneroffi
+DEST_LIB_DIR=${BUILD_ARCH_DIR}/lib/monero-ffi
+DEST_INCLUDE_DIR=${BUILD_ARCH_DIR}/include/monero-ffi
 export CMAKE_INCLUDE_PATH="${BUILD_ARCH_DIR}/include"
 export CMAKE_LIBRARY_PATH="${BUILD_ARCH_DIR}/lib"
 ANDROID_STANDALONE_TOOLCHAIN_PATH="${TOOLCHAIN_BASE_DIR}_${arch}"
