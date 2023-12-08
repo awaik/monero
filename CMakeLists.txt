@@ -79,7 +79,7 @@ set(LibUSB_LIBRARIES ${usb_LIBRARY})
 
 set(Boost_NO_BOOST_CMAKE 1)
 set(Boost_USE_MULTITHREADED ON)
-find_package(Boost 1.58 QUIET REQUIRED COMPONENTS chrono date_time filesystem program_options regex serialization wserialization system thread)
+find_package(Boost 1.72 QUIET REQUIRED COMPONENTS chrono date_time filesystem program_options regex serialization wserialization system thread)
 message(STATUS "Using Boost include dir at ${Boost_INCLUDE_DIR}")
 include_directories(${Boost_INCLUDE_DIR})
 
