@@ -287,7 +287,7 @@ set(
     ${MONERO_FFI_SRC}/monero_ffi.cpp
 )
 
-add_library(monero-ffi SHARED ${MONEROFFI_SRC_FILES})
+add_library(monero-ffi STATIC ${MONEROFFI_SRC_FILES})
 
 target_link_libraries(monero-ffi
   PUBLIC

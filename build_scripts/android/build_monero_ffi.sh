@@ -62,6 +62,7 @@ CC=${CLANG} CXX=${CXXLANG} cmake -D USE_DEVICE_TREZOR=OFF -D BUILD_GUI_DEPS=1 -D
     
 make -j$THREADS
 
-cp -r ./*.so $DEST_LIB_DIR
+#cp -r ./*.so $DEST_LIB_DIR
+find . -type f \( -name "*.so" -o -name "*.a" \) -exec cp {} $DEST_LIB_DIR \;
 cp ../../src/monero_ffi.hpp $DEST_INCLUDE_DIR
 done
