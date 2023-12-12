@@ -237,6 +237,14 @@ target_link_libraries(monero-cpp
   ${OPENSSL_LIBRARIES}
 )
 
+set(
+    MONEROFFI_SRC_FILES
+    ${MONERO_FFI_SRC}/ffi_utils.cpp
+    ${MONERO_FFI_SRC}/wallet_listener.cpp
+    ${MONERO_FFI_SRC}/extended_monero_wallet.cpp
+    ${MONERO_FFI_SRC}/monero_ffi.cpp
+)
+
 add_library(monero-ffi SHARED ${MONEROFFI_SRC_FILES})
 
 target_link_libraries(monero-ffi
