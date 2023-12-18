@@ -73,48 +73,48 @@ set_target_properties(monero-cpp PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR
 # Build test app
 ###############################################
 
-#set(
-#    MONERO_APP_SRC_FILES
-#    
-#    ${CMAKE_SOURCE_DIR}/src/ffi_utils.hpp
-#    ${CMAKE_SOURCE_DIR}/src/ffi_utils.cpp
-#    
-#    ${CMAKE_SOURCE_DIR}/src/wallet_listener.hpp
-#    ${CMAKE_SOURCE_DIR}/src/wallet_listener.cpp
-#    
-#    ${CMAKE_SOURCE_DIR}/src/extended_monero_wallet.hpp
-#    ${CMAKE_SOURCE_DIR}/src/extended_monero_wallet.cpp
-#    
-#    ${CMAKE_SOURCE_DIR}/src/monero_ffi.hpp
-#    ${CMAKE_SOURCE_DIR}/src/monero_ffi.cpp
-#    
-#    ${CMAKE_SOURCE_DIR}/src/monero_app.cpp
-#)
-
-#add_executable(monero-ffi-app  ${MONERO_APP_SRC_FILES})
-#
-#target_link_libraries(monero-ffi-app PUBLIC
-#    monero-cpp
-#    ${Boost_LIBRARIES}
-#    ${OPENSSL_LIBRARIES}
-#    ${EXTRA_LIBRARIES}
-#)
-
-set(MONERO_FFI_SRC "${CMAKE_SOURCE_DIR}/src")
-
 set(
-    MONEROFFI_SRC_FILES
-    ${MONERO_FFI_SRC}/ffi_utils.cpp
-    ${MONERO_FFI_SRC}/wallet_listener.cpp
-    ${MONERO_FFI_SRC}/extended_monero_wallet.cpp
-    ${MONERO_FFI_SRC}/monero_ffi.cpp
+    MONERO_APP_SRC_FILES
+    
+    ${CMAKE_SOURCE_DIR}/src/ffi_utils.hpp
+    ${CMAKE_SOURCE_DIR}/src/ffi_utils.cpp
+    
+    ${CMAKE_SOURCE_DIR}/src/wallet_listener.hpp
+    ${CMAKE_SOURCE_DIR}/src/wallet_listener.cpp
+    
+    ${CMAKE_SOURCE_DIR}/src/extended_monero_wallet.hpp
+    ${CMAKE_SOURCE_DIR}/src/extended_monero_wallet.cpp
+    
+    ${CMAKE_SOURCE_DIR}/src/monero_ffi.hpp
+    ${CMAKE_SOURCE_DIR}/src/monero_ffi.cpp
+    
+    ${CMAKE_SOURCE_DIR}/src/monero_app.cpp
 )
 
-add_library(monero-ffi SHARED ${MONEROFFI_SRC_FILES})
+add_executable(monero-ffi-app  ${MONERO_APP_SRC_FILES})
 
-target_link_libraries(monero-ffi
-  monero-cpp
-  ${Boost_LIBRARIES}
-  ${OPENSSL_LIBRARIES}
-  ${EXTRA_LIBRARIES}
+target_link_libraries(monero-ffi-app PUBLIC
+    monero-cpp
+    ${Boost_LIBRARIES}
+    ${OPENSSL_LIBRARIES}
+    ${EXTRA_LIBRARIES}
 )
+
+#set(MONERO_FFI_SRC "${CMAKE_SOURCE_DIR}/src")
+#
+#set(
+#    MONEROFFI_SRC_FILES
+#    ${MONERO_FFI_SRC}/ffi_utils.cpp
+#    ${MONERO_FFI_SRC}/wallet_listener.cpp
+#    ${MONERO_FFI_SRC}/extended_monero_wallet.cpp
+#    ${MONERO_FFI_SRC}/monero_ffi.cpp
+#)
+#
+#add_library(monero-ffi SHARED ${MONEROFFI_SRC_FILES})
+#
+#target_link_libraries(monero-ffi
+#  monero-cpp
+#  ${Boost_LIBRARIES}
+#  ${OPENSSL_LIBRARIES}
+#  ${EXTRA_LIBRARIES}
+#)

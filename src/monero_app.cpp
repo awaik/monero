@@ -29,10 +29,18 @@ int main(int argc, char** argv)
     
     start_refresh(&error);
     
+    std::cout << "{";
+    sleep(2 * 60);
+   
+    std::cout << "}\r\n";
+    
     store(&error);
     
-    auto public_nodes = get_public_nodes(&error);
-    std::cout << "public_node=" << public_nodes[0] << std::endl;
+    //setup_node("xmrno.de:18089", "", "", &error);
+
+    
+//    auto public_nodes = get_public_nodes(&error);
+//    std::cout << "public_node=" << public_nodes[0] << std::endl;
     
 //    auto utxos_json = get_utxos_json(&error);
 //    std::cout << "=== utxos ===" << std::endl;
@@ -48,7 +56,8 @@ int main(int argc, char** argv)
     while (true)
     {
         auto syncing_height = get_current_height(&error);
-        std::cout << "syncing_height=" << syncing_height << std::endl;
+        auto end_height = get_end_height(&error);
+        std::cout << "syncing_height=" << syncing_height << "; end_height=" << end_height << std::endl;
         sleep(1);
     }
     

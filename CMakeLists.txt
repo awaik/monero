@@ -226,7 +226,7 @@ target_link_libraries(monero-cpp
   ${RANDOMX_LIBRARY}
   ${HARDFORKS_LIBRARY}
   ${RPC_BASE_LIBRARY}
-  
+
   ${UNBOUND_LIBRARY}
   ${ICONV_LIBRARY}
   ${ZMQ_LIBRARY}
@@ -236,6 +236,10 @@ target_link_libraries(monero-cpp
   ${Boost_LIBRARIES}
   ${OPENSSL_LIBRARIES}
 )
+
+########################
+# monero-ffi
+########################
 
 set(
     MONEROFFI_SRC_FILES
@@ -247,7 +251,8 @@ set(
 
 add_library(monero-ffi SHARED ${MONEROFFI_SRC_FILES})
 
-target_link_libraries(monero-ffi
+if (APPLE AND IOS)
+  target_link_libraries(monero-ffi
   monero-cpp
   ${WALLET_LIBRARY}
   ${CRYPTONOTE_BASIC_LIBRARY}
@@ -271,7 +276,7 @@ target_link_libraries(monero-ffi
   ${RANDOMX_LIBRARY}
   ${HARDFORKS_LIBRARY}
   ${RPC_BASE_LIBRARY}
-  
+
   ${UNBOUND_LIBRARY}
   ${ICONV_LIBRARY}
   ${ZMQ_LIBRARY}
@@ -280,4 +285,48 @@ target_link_libraries(monero-ffi
   ${EASYLOGGING_LIBRARY}
   ${Boost_LIBRARIES}
   ${OPENSSL_LIBRARIES}
-)
+  )
+else()
+  target_link_libraries(monero-ffi
+    monero-cpp
+    ${WALLET_LIBRARY}
+
+    -Wl,--whole-archive
+    ${CRYPTONOTE_BASIC_LIBRARY}
+    -Wl,--no-whole-archive
+
+    ${CRYPTONOTE_CORE_LIBRARY}
+    ${CRYPTONOTE_FORMAT_UTILS_BASIC_LIBRARY}
+    ${MNEMONICS_LIBRARY}
+    ${RINGCT_LIBRARY}
+    ${RINGCT_BASIC_LIBRARY}
+    ${NET_LIBRARY}
+    ${COMMON_LIBRARY}
+    ${CNCRYPTO_LIBRARY}
+    ${BLOCKCHAIN_DB_LIBRARY}
+    ${LMDB_LIBRARY}
+    ${EPEE_LIBRARY}
+    ${BLOCKS_LIBRARY}
+    ${CHECKPOINTS_LIBRARY}
+    ${DEVICE_LIBRARY}
+    ${DEVICE_TREZOR_LIBRARY}
+    ${MULTISIG_LIBRARY}
+    ${VERSION_LIBRARY}
+    ${RANDOMX_LIBRARY}
+    ${HARDFORKS_LIBRARY}
+    ${RPC_BASE_LIBRARY}
+    
+    ${UNBOUND_LIBRARY}
+    ${ICONV_LIBRARY}
+    ${ZMQ_LIBRARY}
+    ${EXPAT_LIBRARY}
+    ${SODIUM_LIBRARY} 
+    ${EASYLOGGING_LIBRARY}
+    
+    -Wl,--whole-archive
+    ${Boost_LIBRARIES}
+    -Wl,--no-whole-archive
+
+    ${OPENSSL_LIBRARIES}
+  )
+endif()
