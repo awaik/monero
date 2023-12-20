@@ -1,4 +1,4 @@
-#include "monero_ffi.hpp"
+#include "monero_ffi.h"
 
 #include <memory>
 #include <string>
@@ -421,6 +421,26 @@ void setup_node(const char* address, const char* login, const char* password, Er
     }
 }
 
+void set_restore_height(uint64_t restore_height, ErrorBox* error)
+{
+    if (nullptr == _wallet)
+    {
+        error->code = -1;
+        error->message = WALLET_NOT_FOUND_MESSAGE;
+        return;
+    }
+    
+    try
+    {
+        _wallet->set_restore_height(restore_height);
+    }
+    catch (std::exception& e)
+    {
+        error->code = -1;
+        error->message = strdup(e.what());
+    }
+}
+
 void start_refresh(ErrorBox* error)
 {
     if (nullptr == _wallet)
@@ -440,7 +460,35 @@ void start_refresh(ErrorBox* error)
     _listener = new wallet_listener();
     _wallet->add_listener(*_listener);
     
-    _wallet->sync();
+    try
+    {
+        _wallet->sync();
+    }
+    catch (std::exception& e)
+    {
+        error->code = -1;
+        error->message = strdup(e.what());
+    }
+}
+
+void stop_syncing(ErrorBox* error)
+{
+    if (nullptr == _wallet)
+    {
+        error->code = -1;
+        error->message = WALLET_NOT_FOUND_MESSAGE;
+        return;
+    }
+    
+    try
+    {
+        _wallet->stop_syncing();
+    }
+    catch (std::exception& e)
+    {
+        error->code = -1;
+        error->message = strdup(e.what());
+    }
 }
 
 uint64_t get_start_height(ErrorBox* error)

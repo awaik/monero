@@ -1,7 +1,7 @@
 #include <iostream>
 #include <unistd.h>
 
-#include "monero_ffi.hpp"
+#include "monero_ffi.h"
 
 int main(int argc, char** argv)
 {

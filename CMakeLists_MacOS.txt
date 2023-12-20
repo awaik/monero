@@ -85,7 +85,7 @@ set(
     ${CMAKE_SOURCE_DIR}/src/extended_monero_wallet.hpp
     ${CMAKE_SOURCE_DIR}/src/extended_monero_wallet.cpp
     
-    ${CMAKE_SOURCE_DIR}/src/monero_ffi.hpp
+    ${CMAKE_SOURCE_DIR}/src/monero_ffi.h
     ${CMAKE_SOURCE_DIR}/src/monero_ffi.cpp
     
     ${CMAKE_SOURCE_DIR}/src/monero_app.cpp

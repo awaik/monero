@@ -57,7 +57,11 @@ uint32_t import_multisig_images(const char* const* const info, uint32_t size, Er
 
 void setup_node(const char* address, const char* login, const char* password, ErrorBox* error);
 
+void set_restore_height(uint64_t restore_height, ErrorBox* error);
+
 void start_refresh(ErrorBox* error);
+
+void stop_syncing(ErrorBox* error);
 
 uint64_t get_start_height(ErrorBox* error);
 
