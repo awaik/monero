@@ -46,7 +46,7 @@ cmake -D IOS=ON \
 make -j4
 
 cp ./*.dylib $DEST_LIB_DIR
-cp ../../src/monero_ffi.hpp $DEST_INCLUDE_DIR
+cp ../../src/monero_ffi.h $DEST_INCLUDE_DIR
 
 popd
 
