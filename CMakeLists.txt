@@ -254,7 +254,6 @@ add_library(monero-ffi SHARED ${MONEROFFI_SRC_FILES})
 if (APPLE AND IOS)
   target_link_libraries(monero-ffi
   monero-cpp
-  ${WALLET_API_LIBRARY}
   ${WALLET_LIBRARY}
   ${CRYPTONOTE_BASIC_LIBRARY}
   ${CRYPTONOTE_CORE_LIBRARY}

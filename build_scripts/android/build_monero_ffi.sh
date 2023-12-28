@@ -12,8 +12,8 @@ for arch in "aarch" "aarch64" "i686" "x86_64"
 do
 FLAGS=""
 BUILD_ARCH_DIR=${BUILD_DIR}/prefix_${arch}
-DEST_LIB_DIR=${BUILD_ARCH_DIR}/lib/monero-ffi
-DEST_INCLUDE_DIR=${BUILD_ARCH_DIR}/include/monero-ffi
+DEST_LIB_DIR=${BUILD_ARCH_DIR}/lib
+DEST_INCLUDE_DIR=${BUILD_ARCH_DIR}/include
 export CMAKE_INCLUDE_PATH="${BUILD_ARCH_DIR}/include"
 export CMAKE_LIBRARY_PATH="${BUILD_ARCH_DIR}/lib"
 ANDROID_STANDALONE_TOOLCHAIN_PATH="${TOOLCHAIN_BASE_DIR}_${arch}"
@@ -62,7 +62,7 @@ CC=${CLANG} CXX=${CXXLANG} cmake -D USE_DEVICE_TREZOR=OFF -D BUILD_GUI_DEPS=1 -D
     
 make -j$THREADS
 
-#cp -r ./*.so $DEST_LIB_DIR
-find . -type f \( -name "*.so" -o -name "*.a" \) -exec cp {} $DEST_LIB_DIR \;
-cp ../../src/monero_ffi.hpp $DEST_INCLUDE_DIR
+#find . -type f \( -name "*.so" -o -name "*.a" \) -exec cp {} $DEST_LIB_DIR \;
+find . -type f \( -name "*.so" \) -exec cp {} $DEST_LIB_DIR \;
+cp ../../src/monero_ffi.h $DEST_INCLUDE_DIR
 done

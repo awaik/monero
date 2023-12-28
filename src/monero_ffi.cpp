@@ -205,6 +205,26 @@ void store(ErrorBox* error)
     }
 }
 
+void move_to(const char* path, const char* password, ErrorBox* error)
+{
+    if (nullptr == _wallet)
+    {
+        error->code = -1;
+        error->message = WALLET_NOT_FOUND_MESSAGE;
+        return;
+    }
+    
+    try
+    {
+        _wallet->move_to(path, password);
+    }
+    catch (std::exception& e)
+    {
+        error->code = -1;
+        error->message = strdup(e.what());
+    }
+}
+
 void close_current_wallet(ErrorBox* error)
 {
     if (nullptr == _wallet)
@@ -535,13 +555,6 @@ uint64_t get_end_height(ErrorBox* error)
     {
         error->code = -1;
         error->message = WALLET_NOT_FOUND_MESSAGE;
-        return -1;
-    }
-    
-    if (nullptr == _listener)
-    {
-        error->code = -1;
-        error->message = LISTENER_IS_NOT_SET_MESSAGE;
         return -1;
     }
     

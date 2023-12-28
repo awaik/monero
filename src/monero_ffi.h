@@ -37,6 +37,8 @@ const ByteArray get_cache_data(ErrorBox* error);
 
 void store(ErrorBox* error);
 
+void move_to(const char* path, const char* password, ErrorBox* error);
+
 void close_current_wallet(ErrorBox* error);
 
 // ************* Multisig *************
