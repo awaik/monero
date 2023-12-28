@@ -15,5 +15,5 @@ cd $BUILD_LIB_DIR
 #cp ./libzmq.a ${DIST_LIB_DIR}
 #cp ./libmonero.a $DIST_LIB_DIR
 
-cp ./monero-ffi/libmonero-ffi.dylib $DIST_LIB_DIR
-cp ${BUILD_INCLUDE_DIR}/monero-ffi/* $DIST_INCLUDE_DIR
+cp ./*.dylib $DIST_LIB_DIR
+cp ${BUILD_INCLUDE_DIR}/monero_ffi.h $DIST_INCLUDE_DIR

@@ -4,8 +4,6 @@
 
 MONEROFFI_DIR_PATH="${SOURCE_DIR}/monero-ffi"
 BUILD_TYPE=release
-DEST_LIB_DIR=${BUILD_LIB_DIR}/monero-ffi
-DEST_INCLUDE_DIR=${BUILD_INCLUDE_DIR}/monero-ffi
 
 echo "Copy monero to $MONEROFFI_DIR_PATH"
 mkdir -p $MONEROFFI_DIR_PATH
@@ -13,9 +11,6 @@ cd $MONEROFFI_DIR_PATH
 rsync -aP --exclude=build_scripts $SCRIPTS_DIR/../../ ${MONEROFFI_DIR_PATH}/
 mkdir -p build
 cd ..
-
-mkdir -p $DEST_LIB_DIR
-mkdir -p $DEST_INCLUDE_DIR
 
 for arch in "arm64" #"armv7" "arm64"
 do
@@ -45,8 +40,8 @@ cmake -D IOS=ON \
 
 make -j4
 
-cp ./*.dylib $DEST_LIB_DIR
-cp ../../src/monero_ffi.h $DEST_INCLUDE_DIR
+cp ./*.dylib ${BUILD_LIB_DIR}
+cp ../../src/monero_ffi.h ${BUILD_INCLUDE_DIR}
 
 popd
 
