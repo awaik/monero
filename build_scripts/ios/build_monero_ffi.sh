@@ -16,6 +16,9 @@ for arch in "arm64" #"armv7" "arm64"
 do
 
 echo "Building IOS ${arch}"
+
+rm -f ${BUILD_LIB_DIR}/libsodium.dylib > /dev/null
+
 export CMAKE_INCLUDE_PATH=${BUILD_INCLUDE_DIR}
 export CMAKE_LIBRARY_PATH=${BUILD_LIB_DIR}
 
