@@ -6,16 +6,16 @@
 int main(int argc, char** argv)
 {
     const char* path = "/Users/dmytro/Documents/_WALLETS/v1/moneroWalletVer3";
-    //const char* seed = "point nerves ungainly gather loudly theatrics october misery aphid website attire erected shelter ouch hesitate nouns suede omnibus folding last fruit upbeat haystack hedgehog gather";
+    const char* seed = "point nerves ungainly gather loudly theatrics october misery aphid website attire erected shelter ouch hesitate nouns suede omnibus folding last fruit upbeat haystack hedgehog gather";
     
     bool wallet_exists = is_wallet_exist(path);
 	std::cout << "wallet_exists=" << wallet_exists << std::endl;
     
     ErrorBox error;
     
-    //restore_wallet_from_seed(path, "", seed, 0, &error);
+    restore_wallet_from_seed(path, "", seed, 0, &error);
     
-    load_wallet(path, "", 0, &error);
+    //load_wallet(path, "", 0, &error);
     
     auto address1 = get_address(&error);
     std::cout << "address1=" << address1 << std::endl;

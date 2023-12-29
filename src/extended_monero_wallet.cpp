@@ -44,7 +44,11 @@ extended_monero_wallet* extended_monero_wallet::open_wallet_data(const std::stri
 extended_monero_wallet* extended_monero_wallet::create_wallet_from_seed(monero_wallet_config& config)
 {
     MTRACE("create_wallet_from_seed(...)");
-    
+ 
+    if (config.m_language == boost::none) config.m_language = std::string("English");
+    if (config.m_is_multisig == boost::none) config.m_is_multisig = false;
+    if (config.m_seed_offset == boost::none) config.m_seed_offset = std::string("");
+
     // normalize config
     if (config.m_restore_height == boost::none)
         config.m_restore_height = 0;
