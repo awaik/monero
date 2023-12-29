@@ -18,50 +18,50 @@ env:
 
 jobs:
 
-#  build-android:
-#    runs-on: ubuntu-latest
-#    env:
-#      CCACHE_TEMPDIR: /tmp/.ccache-temp
-#    steps:
-#
-#    - uses: actions/checkout@v3
-#      with:
-#        submodules: recursive
-#
-#    - uses: actions/cache@v3
-#      with:
-#        path: ~/.ccache
-#        key: ccache-ubuntu-build-${{ github.sha }}
-#        restore-keys: ccache-ubuntu-build-
-#
-#    - name: Remove bundled Boost.
-#      run: ${{env.REMOVE_BUNDLED_BOOST}}
-#
-#    - name: Set apt.conf
-#      run: ${{env.APT_SET_CONF}}
-#
-#    - name: Update apt.
-#      run: sudo apt update -y
-#
-#    - name: Install dependencies.
-#      run: ${{env.APT_INSTALL_LINUX}}
-#
-#    - name: Build.
-#      run: |
-#        ${{env.CCACHE_SETTINGS}}
-#        cd build_scripts/android
-#        ./build_all.sh
-#
-#    - name: Create zip-arcive.
-#      run: |
-#        cd build_scripts/android
-#        zip -r dist-android.zip dist
-#
-#    - uses: actions/upload-artifact@v3
-#      with:
-#        name: dist-android.zip
-#        path: build_scripts/android/dist-android.zip 
-#        retention-days: 1
+  build-android:
+    runs-on: ubuntu-latest
+    env:
+      CCACHE_TEMPDIR: /tmp/.ccache-temp
+    steps:
+
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - uses: actions/cache@v3
+      with:
+        path: ~/.ccache
+        key: ccache-ubuntu-build-${{ github.sha }}
+        restore-keys: ccache-ubuntu-build-
+
+    - name: Remove bundled Boost.
+      run: ${{env.REMOVE_BUNDLED_BOOST}}
+
+    - name: Set apt.conf
+      run: ${{env.APT_SET_CONF}}
+
+    - name: Update apt.
+      run: sudo apt update -y
+
+    - name: Install dependencies.
+      run: ${{env.APT_INSTALL_LINUX}}
+
+    - name: Build.
+      run: |
+        ${{env.CCACHE_SETTINGS}}
+        cd build_scripts/android
+        ./build_all.sh
+
+    - name: Create zip-arcive.
+      run: |
+        cd build_scripts/android
+        zip -r dist-android.zip dist
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: dist-android.zip
+        path: build_scripts/android/dist-android.zip 
+        retention-days: 1
 
 #  build-macos:
 #    runs-on: macos-13
@@ -99,48 +99,48 @@ jobs:
 #        path: build_scripts/macos/dist-macos.zip
 #        retention-days: 1
 
-  build-ios:
-    runs-on: macos-13
-    env:
-      CCACHE_TEMPDIR: /tmp/.ccache-temp
-    steps:
-
-    - uses: actions/checkout@v3
-      with:
-        submodules: recursive
-
-    - uses: actions/cache@v3
-      with:
-        path: /Users/runner/Library/Caches/ccache
-        key: ccache-${{ runner.os }}-build-ios-${{ github.sha }}
-        restore-keys: ccache-${{ runner.os }}-build-ios-
-
-    - name: install dependencies
-      run: |
-        HOMEBREW_NO_AUTO_UPDATE=1 brew install ccache
-
-    - name: Build.
-      run: |
-        ${{env.CCACHE_SETTINGS}}
-        cd build_scripts/ios
-        ./build_all.sh
-
-    - name: Create zip-arcive.
-      run: |
-        cd build_scripts/ios
-        zip -r dist-ios.zip dist
-
-    - uses: actions/upload-artifact@v3
-      with:
-        name: dist-ios.zip
-        path: build_scripts/ios/dist-ios.zip
-        retention-days: 1
+#  build-ios:
+#    runs-on: macos-13
+#    env:
+#      CCACHE_TEMPDIR: /tmp/.ccache-temp
+#    steps:
+#
+#    - uses: actions/checkout@v3
+#      with:
+#        submodules: recursive
+#
+#    - uses: actions/cache@v3
+#      with:
+#        path: /Users/runner/Library/Caches/ccache
+#        key: ccache-${{ runner.os }}-build-ios-${{ github.sha }}
+#        restore-keys: ccache-${{ runner.os }}-build-ios-
+#
+#    - name: install dependencies
+#      run: |
+#        HOMEBREW_NO_AUTO_UPDATE=1 brew install ccache
+#
+#    - name: Build.
+#      run: |
+#        ${{env.CCACHE_SETTINGS}}
+#        cd build_scripts/ios
+#        ./build_all.sh
+#
+#    - name: Create zip-arcive.
+#      run: |
+#        cd build_scripts/ios
+#        zip -r dist-ios.zip dist
+#
+#    - uses: actions/upload-artifact@v3
+#      with:
+#        name: dist-ios.zip
+#        path: build_scripts/ios/dist-ios.zip
+#        retention-days: 1
 
   #Release
   create-release:
     runs-on: ubuntu-latest
     #needs: [build-android, build-ios]
-    needs: [build-ios]
+    needs: [build-android]
     steps:
 
     - name: Create release.
@@ -155,37 +155,37 @@ jobs:
         draft: false
         prerelease: false
 
-#    # Android
-#    - name: Download Android artifact.
-#      uses: actions/download-artifact@v3
-#      with:
-#        name: dist-android.zip
-#
-#    - name: Upload Android artifact.
-#      uses: actions/upload-release-asset@v1
-#      env:
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#      with:
-#        upload_url: ${{ steps.create_release.outputs.upload_url }}
-#        asset_path: dist-android.zip
-#        asset_name: dist-android.zip
-#        asset_content_type: application/zip
-
-    # iOS
-    - name: Download iOS artifact.
+    # Android
+    - name: Download Android artifact.
       uses: actions/download-artifact@v3
       with:
-        name: dist-ios.zip
+        name: dist-android.zip
 
-    - name: Upload iOS artifact.
+    - name: Upload Android artifact.
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist-ios.zip
-        asset_name: dist-ios.zip
+        asset_path: dist-android.zip
+        asset_name: dist-android.zip
         asset_content_type: application/zip
+
+#    # iOS
+#    - name: Download iOS artifact.
+#      uses: actions/download-artifact@v3
+#      with:
+#        name: dist-ios.zip
+#
+#    - name: Upload iOS artifact.
+#      uses: actions/upload-release-asset@v1
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      with:
+#        upload_url: ${{ steps.create_release.outputs.upload_url }}
+#        asset_path: dist-ios.zip
+#        asset_name: dist-ios.zip
+#        asset_content_type: application/zip
 
 #    # macOS
 #    - name: Download macOS artifact.
